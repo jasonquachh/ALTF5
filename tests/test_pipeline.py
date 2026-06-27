@@ -25,28 +25,31 @@ def _greenhouse_payload(job_id, title="Software Intern, Summer 2025"):
 def _settings(tmp_path):
     return Settings(
         companies=[{"name": "Acme", "type": "greenhouse", "token": "acme"}],
-        discord_webhook_url="",      # forces dry-run notifier
+        discord_webhook_url="https://discord.test/api/webhooks/1/abc",
         db_path=str(tmp_path / "test.db"),
         verify_applyable=True,
         announce_backfill=True,
-        dry_run=True,
+        dry_run=False,           # exercise the real delivery path (mocked HTTP)
     )
 
 
 def _patch_http(pipe, payload):
-    # The verifier GETs the apply URL; return an "open" page for it.
     fake = FakeHTTP(
         {
             "boards-api.greenhouse.io": FakeResponse(payload),
+            # The verifier GETs the apply URL; return an "open" page for it.
             "boards.greenhouse.io/acme/jobs": FakeResponse(
                 text="<html>Apply now! We are hiring.</html>",
                 headers={"Content-Type": "text/html"},
             ),
+            # The Discord webhook POST: 204 = delivered.
+            "discord.test": FakeResponse(status_code=204),
         }
     )
     pipe.http = fake
     pipe.verifier.http = fake
     pipe.notifier.http = fake
+    pipe.notifier.dry_run = False
 
 
 def test_announces_once_then_dedupes(tmp_path):
@@ -61,6 +64,26 @@ def test_announces_once_then_dedupes(tmp_path):
     # Second pass over the same posting: already pushed -> nothing announced.
     second = pipe.run_once()
     assert second["announced"] == 0
+    pipe.close()
+
+
+def test_dry_run_does_not_mark_pushed(tmp_path):
+    # Regression: a dry run must not record postings as pushed, otherwise they
+    # are silently swallowed once a real webhook is configured.
+    settings = _settings(tmp_path)
+    pipe = Pipeline(settings)
+    _patch_http(pipe, _greenhouse_payload(1))
+    pipe.notifier.dry_run = True
+
+    r1 = pipe.run_once()
+    assert r1["announced"] == 1            # dry-run still logs what it would send
+    assert pipe.store.stats()["pushed"] == 0   # but nothing is marked pushed
+
+    # Configure a real webhook: the posting now actually goes out.
+    pipe.notifier.dry_run = False
+    r2 = pipe.run_once()
+    assert r2["announced"] == 1
+    assert pipe.store.stats()["pushed"] == 1
     pipe.close()
 
 

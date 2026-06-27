@@ -31,11 +31,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: internships.db
+          # Bump the version suffix (v2, v3, ...) any time you want to wipe the
+          # dedup history and re-announce every currently-open internship.
           key: internships-db-v2-${{ github.run_id }}
           restore-keys: |
-            internships-db-
+            internships-db-v2-
 
       - name: Run scraper
         env:
+          # SECURITY: this repo is public, so this URL is visible to everyone and
+          # already lives in git history. Prefer a repository secret instead:
+          #   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # and regenerate the webhook in Discord (Edit Webhook -> Copy URL).
           DISCORD_WEBHOOK_URL: https://discord.com/api/webhooks/1520384539044741193/0KnMKSkVg3-y9Gh3B4xUXMaQTjZ97d_uN5ybnAW81BbD9fjciSweVgAnTZQeYstVfbR2
         run: python -m fortune_scraper.cli run -v

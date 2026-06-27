@@ -38,11 +38,6 @@ companies:
     token: airbnb
     enabled: true
 
-  - name: DoorDash
-    type: greenhouse
-    token: doordash
-    enabled: true
-
   - name: Coinbase
     type: greenhouse
     token: coinbase
@@ -67,11 +62,6 @@ companies:
   - name: Plaid
     type: lever
     token: plaid
-    enabled: true
-
-  - name: KAYAK
-    type: lever
-    token: kayak
     enabled: true
 
   # ---- Ashby ---------------------------------------------------------------

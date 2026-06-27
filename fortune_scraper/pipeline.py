@@ -111,8 +111,12 @@ class Pipeline:
                 key=lambda t: t[0].release_date or datetime.min.replace(tzinfo=timezone.utc)
             )
             sent = self.notifier.announce(to_announce)
-            for item, _ in to_announce[:sent]:
-                self.store.mark_pushed(item.uid)
+            # Only persist "pushed" when a real delivery happened. In dry-run we
+            # log what *would* be sent but must NOT mark it pushed, otherwise the
+            # posting is silently swallowed once a real webhook is configured.
+            if not self.notifier.dry_run:
+                for item, _ in to_announce[:sent]:
+                    self.store.mark_pushed(item.uid)
 
         summary = {
             "companies": len(s.companies),
