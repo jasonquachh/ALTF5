@@ -7,7 +7,12 @@ name: Internship Scrape
 on:
   schedule:
     - cron: "*/30 * * * *"   # every 30 minutes
-  workflow_dispatch: {}        # allow manual runs from the Actions tab
+  workflow_dispatch:
+    inputs:
+      reset:
+        description: "Wipe dedup history and re-announce all current openings (use ONLY after clearing the Discord channel, to avoid duplicates)"
+        type: boolean
+        default: false
 
 concurrency:
   group: internship-scrape
@@ -36,6 +41,12 @@ jobs:
           key: internships-db-v4-${{ github.run_id }}
           restore-keys: |
             internships-db-v4-
+
+      # Manual reset: only when the workflow is dispatched with reset=true.
+      # Scheduled runs never reset, so they never create duplicates.
+      - name: Reset dedup store
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.reset == 'true' }}
+        run: rm -f internships.db
 
       - name: Run scraper
         env:
