@@ -1,0 +1,98 @@
+# =============================================================================
+# Company sources for the Fortune 500 internship scraper.
+#
+# Each entry points the scraper at one company's public Applicant Tracking
+# System (ATS) feed. Four ATS types are supported, covering the vast majority
+# of large employers:
+#
+#   greenhouse   token: the slug in  boards.greenhouse.io/<token>
+#   lever        token: the slug in  jobs.lever.co/<token>
+#   ashby        token: the slug in  jobs.ashbyhq.com/<token>
+#   workday      host/tenant/site from the company's myworkdayjobs.com URL
+#
+# HOW TO FIND A SLUG / WORKDAY COORDINATES
+# ----------------------------------------
+#   * Greenhouse: open the careers page, find a job link. If the URL contains
+#     boards.greenhouse.io/acme/jobs/123  ->  token: acme
+#   * Lever: jobs.lever.co/acme/...        ->  token: acme
+#   * Ashby: jobs.ashbyhq.com/acme/...     ->  token: acme
+#   * Workday: the careers URL looks like
+#       https://acme.wd5.myworkdayjobs.com/en-US/External
+#     ->  host: acme.wd5.myworkdayjobs.com,  tenant: acme,  site: External
+#
+# The slugs below are a STARTER SET of large/Fortune-500-class employers using
+# these systems. Verify each one against the company's live careers page (slugs
+# occasionally change) and add your own. Set `enabled: false` to skip an entry
+# without deleting it.
+# =============================================================================
+
+companies:
+  # ---- Greenhouse ----------------------------------------------------------
+  - name: Stripe
+    type: greenhouse
+    token: stripe
+    enabled: true
+
+  - name: Airbnb
+    type: greenhouse
+    token: airbnb
+    enabled: true
+
+  - name: DoorDash
+    type: greenhouse
+    token: doordash
+    enabled: true
+
+  - name: Coinbase
+    type: greenhouse
+    token: coinbase
+    enabled: true
+
+  - name: Databricks
+    type: greenhouse
+    token: databricks
+    enabled: true
+
+  - name: Robinhood
+    type: greenhouse
+    token: robinhood
+    enabled: true
+
+  # ---- Lever ---------------------------------------------------------------
+  - name: Netflix
+    type: lever
+    token: netflix
+    enabled: true
+
+  - name: Plaid
+    type: lever
+    token: plaid
+    enabled: true
+
+  - name: KAYAK
+    type: lever
+    token: kayak
+    enabled: true
+
+  # ---- Ashby ---------------------------------------------------------------
+  - name: Ramp
+    type: ashby
+    token: ramp
+    enabled: true
+
+  - name: Notion
+    type: ashby
+    token: notion
+    enabled: true
+
+  # ---- Workday (most common among the Fortune 500) -------------------------
+  # NOTE: confirm host/tenant/site on the live careers page before enabling.
+  # Disabled by default because Workday coordinates vary per company and a
+  # wrong host produces noisy errors.
+  - name: Example Workday Corp
+    type: workday
+    host: example.wd5.myworkdayjobs.com
+    tenant: example
+    site: External
+    search_text: intern
+    enabled: false

@@ -1,0 +1,41 @@
+name: Internship Scrape
+
+# Runs the scraper on a schedule so newly-opened internships are announced to
+# Discord automatically. The SQLite dedup store is cached between runs so a
+# posting is only ever announced once.
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"   # every 30 minutes
+  workflow_dispatch: {}        # allow manual runs from the Actions tab
+
+concurrency:
+  group: internship-scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Persist the dedup DB across scheduled runs.
+      - name: Restore dedup store
+        uses: actions/cache@v4
+        with:
+          path: internships.db
+          key: internships-db-${{ github.run_id }}
+          restore-keys: |
+            internships-db-
+
+      - name: Run scraper
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python -m fortune_scraper.cli run -v

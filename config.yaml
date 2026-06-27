@@ -1,0 +1,31 @@
+# Runtime configuration for the Fortune 500 internship scraper.
+# Secrets (the Discord webhook) come from the environment / .env, NOT this file.
+
+# Path to the SQLite dedup store. Keep this file to remember what has already
+# been announced across runs.
+db_path: internships.db
+
+# Verify each posting's apply URL actually loads and isn't closed before
+# announcing it (the "make sure it's actually applyable" requirement).
+verify_applyable: true
+
+# On first run (and whenever new companies are added), announce internships
+# that are already open — not just ones that open from now on.
+announce_backfill: true
+
+# Safety valve so a first run doesn't dump hundreds of old postings at once.
+# Brand-new postings are NEVER subject to this cap — only backfill is.
+max_backfill_per_run: 25
+
+# Optionally ignore postings whose release date is older than this many days.
+# Leave null to consider every currently-open posting. Example: 30
+only_new_since_days: null
+
+# Politeness delay between companies (seconds).
+request_delay_seconds: 0.5
+
+# Display name the webhook posts under.
+discord_username: Internship Radar
+
+# Companies are loaded from data/companies.yaml by default. You may instead
+# inline a `companies:` list here to override that file.
