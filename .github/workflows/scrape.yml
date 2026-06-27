@@ -37,5 +37,5 @@ jobs:
 
       - name: Run scraper
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: https://discord.com/api/webhooks/1520381908020760657/edS76SfNhYJcwWVZolCJmOJMtGgbv2yKaTZJW83n8y1WGnkDqPwGZ5J1LCYpyz85lD2W
         run: python -m fortune_scraper.cli run -v
