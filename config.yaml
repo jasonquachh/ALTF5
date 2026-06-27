@@ -21,6 +21,11 @@ announce_backfill: true
 # Brand-new postings are NEVER subject to this cap — only backfill is.
 max_backfill_per_run: 25
 
+# Drip feed: maximum postings announced per run (0 = unlimited). With the
+# workflow scheduled every 8 hours, a value of 1 yields ~3 announcements/day.
+# Roles above the cap simply carry over to the next run.
+max_announce_per_run: 1
+
 # Optionally ignore postings whose release date is older than this many days.
 # Leave null to consider every currently-open posting. Example: 30
 only_new_since_days: null

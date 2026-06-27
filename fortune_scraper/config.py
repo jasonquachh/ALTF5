@@ -19,6 +19,7 @@ class Settings:
     us_only: bool = True
     announce_backfill: bool = True
     max_backfill_per_run: int = 25
+    max_announce_per_run: int = 0          # 0 = unlimited; set to 1 for a drip feed
     only_new_since_days: int | None = None     # ignore postings older than N days
     request_delay_seconds: float = 0.5
     discord_username: str = "Internship Radar"
@@ -62,6 +63,9 @@ def load_settings(
         ),
         max_backfill_per_run=int(
             os.environ.get("MAX_BACKFILL_PER_RUN", cfg.get("max_backfill_per_run", 25))
+        ),
+        max_announce_per_run=int(
+            os.environ.get("MAX_ANNOUNCE_PER_RUN", cfg.get("max_announce_per_run", 0))
         ),
         only_new_since_days=_as_optional_int(
             os.environ.get("ONLY_NEW_SINCE_DAYS"), cfg.get("only_new_since_days")

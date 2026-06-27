@@ -2,11 +2,12 @@ name: Internship Scrape
 
 # Runs the scraper on a schedule so newly-opened internships are announced to
 # Discord automatically. The SQLite dedup store is cached between runs so a
-# posting is only ever announced once.
+# posting is only ever announced once. With max_announce_per_run: 1 in
+# config.yaml, the every-8-hours schedule produces ~3 announcements per day.
 
 on:
   schedule:
-    - cron: "*/30 * * * *"   # every 30 minutes
+    - cron: "0 */8 * * *"   # every 8 hours (00:00, 08:00, 16:00 UTC) = 3x/day
   workflow_dispatch:
     inputs:
       reset:

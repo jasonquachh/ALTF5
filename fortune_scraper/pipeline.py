@@ -93,6 +93,13 @@ class Pipeline:
                 if already_pushed:
                     continue
 
+                # Drip throttle: cap how many postings we announce per run
+                # (0 = unlimited). Everything is still scanned above so dedup and
+                # closed-tracking stay accurate; we just stop *announcing* once
+                # the cap is hit. The rest carry over to the next run.
+                if s.max_announce_per_run and len(to_announce) >= s.max_announce_per_run:
+                    continue
+
                 if not self._within_recency(item):
                     continue
 
