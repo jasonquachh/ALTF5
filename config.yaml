@@ -9,6 +9,10 @@ db_path: internships.db
 # announcing it (the "make sure it's actually applyable" requirement).
 verify_applyable: true
 
+# Only announce roles based in the United States. Postings with no US location
+# are skipped, and any foreign offices are trimmed from the displayed locations.
+us_only: true
+
 # On first run (and whenever new companies are added), announce internships
 # that are already open — not just ones that open from now on.
 announce_backfill: true

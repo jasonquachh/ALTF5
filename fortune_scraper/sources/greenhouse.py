@@ -38,7 +38,9 @@ class GreenhouseSource(Source):
         for job in data.get("jobs", []):
             title = job.get("title", "")
             content = html_to_text(job.get("content", ""))
-            if not looks_like_internship(title, content[:400]):
+            # Detect on the title only — the description body often mentions
+            # "interns" in boilerplate and would cause false positives.
+            if not looks_like_internship(title):
                 continue
 
             locations = []

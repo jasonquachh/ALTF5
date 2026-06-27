@@ -23,6 +23,7 @@ from .config import Settings
 from .discord_notifier import DiscordNotifier
 from .http_client import build_session, polite_sleep
 from .models import Internship
+from .parsing import filter_us_locations
 from .sources import build_source
 from .store import Store
 from .verifier import Verifier
@@ -71,8 +72,22 @@ class Pipeline:
 
             scanned_companies.add(source.company)
             for item in postings:
-                scanned += 1
+                # Intra-run dedup: never process the same posting twice in one
+                # pass (some feeds list a job under multiple locations).
+                if item.uid in seen_uids:
+                    continue
                 seen_uids.add(item.uid)
+                scanned += 1
+
+                # US-only filter: drop non-US roles and trim foreign offices
+                # off the locations we display.
+                if s.us_only:
+                    is_us, us_locs = filter_us_locations(item.locations)
+                    if not is_us:
+                        log.info("Skipping non-US role: %s %s", item, item.locations)
+                        continue
+                    item.locations = us_locs
+
                 is_new = self.store.upsert_seen(item)
                 already_pushed = self.store.is_pushed(item.uid)
                 if already_pushed:

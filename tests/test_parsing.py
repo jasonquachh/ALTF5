@@ -25,6 +25,25 @@ class TestInternshipDetection:
         )
 
 
+class TestEarlyCareerDetection:
+    def test_new_grad_included(self):
+        assert parsing.looks_like_internship("New Grad Software Engineer")
+        assert parsing.looks_like_internship("University Graduate, Data Analyst")
+        assert parsing.looks_like_internship("Early Career Rotational Program")
+
+    def test_senior_roles_excluded(self):
+        assert not parsing.looks_like_internship("Senior Software Engineer")
+        assert not parsing.looks_like_internship("Staff Data Scientist")
+        assert not parsing.looks_like_internship("Engineering Manager")
+        # Title with no student/intern signal at all (the Stripe false positive).
+        assert not parsing.looks_like_internship("Account Executive, Mid-Market")
+
+    def test_detection_is_title_only(self):
+        # Even if a description mentions interns, a non-intern title is rejected
+        # because adapters now pass only the title.
+        assert not parsing.looks_like_internship("Backend Engineer")
+
+
 class TestHtmlToText:
     def test_strips_tags_and_keeps_bullets(self):
         html = "<p>Hello</p><ul><li>One</li><li>Two</li></ul><script>x=1</script>"
@@ -34,9 +53,42 @@ class TestHtmlToText:
         assert "• Two" in text
         assert "x=1" not in text
 
+    def test_decodes_entity_encoded_html(self):
+        # Greenhouse returns HTML with entity-encoded angle brackets.
+        raw = '&lt;div class=&quot;content-intro&quot;&gt;&lt;p&gt;Airbnb was born&lt;/p&gt;&lt;/div&gt;'
+        text = parsing.html_to_text(raw)
+        assert "Airbnb was born" in text
+        assert "&lt;" not in text and "<div" not in text and "&quot;" not in text
+
     def test_plain_passthrough(self):
         assert parsing.html_to_text("just text") == "just text"
         assert parsing.html_to_text(None) == ""
+
+
+class TestUSLocation:
+    def test_us_locations(self):
+        assert parsing.location_us_status("New York, NY") is True
+        assert parsing.location_us_status("San Francisco, CA") is True
+        assert parsing.location_us_status("Seattle, Washington") is True
+        assert parsing.location_us_status("Remote, US") is True
+        assert parsing.location_us_status("Remote") is True
+
+    def test_non_us_locations(self):
+        assert parsing.location_us_status("São Paulo, Brazil") is False
+        assert parsing.location_us_status("Milan, Italy") is False
+        assert parsing.location_us_status("London, UK") is False
+        assert parsing.location_us_status("Toronto, Canada") is False
+        assert parsing.location_us_status("Bengaluru, India") is False
+        assert parsing.location_us_status("Remote - EMEA") is False
+
+    def test_filter_keeps_only_us(self):
+        is_us, locs = parsing.filter_us_locations(["New York, NY", "London, UK"])
+        assert is_us is True
+        assert locs == ["New York, NY"]
+
+        is_us, locs = parsing.filter_us_locations(["Milan, Italy"])
+        assert is_us is False
+        assert locs == []
 
 
 class TestSalary:

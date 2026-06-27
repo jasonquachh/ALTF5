@@ -16,6 +16,7 @@ class Settings:
     discord_webhook_url: str = ""
     db_path: str = "internships.db"
     verify_applyable: bool = True
+    us_only: bool = True
     announce_backfill: bool = True
     max_backfill_per_run: int = 25
     only_new_since_days: int | None = None     # ignore postings older than N days
@@ -55,6 +56,7 @@ def load_settings(
         verify_applyable=_as_bool(
             os.environ.get("VERIFY_APPLYABLE"), cfg.get("verify_applyable", True)
         ),
+        us_only=_as_bool(os.environ.get("US_ONLY"), cfg.get("us_only", True)),
         announce_backfill=_as_bool(
             os.environ.get("ANNOUNCE_BACKFILL"), cfg.get("announce_backfill", True)
         ),

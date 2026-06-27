@@ -40,7 +40,7 @@ class AshbySource(Source):
             etype = job.get("employmentType", "") or ""
             desc = html_to_text(job.get("descriptionHtml") or job.get("descriptionPlain", ""))
 
-            if not looks_like_internship(title, etype, desc[:400]):
+            if not looks_like_internship(title, etype):
                 continue
 
             locations = []

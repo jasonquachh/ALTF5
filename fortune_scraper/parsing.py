@@ -6,47 +6,77 @@ be unit tested without any network access.
 
 from __future__ import annotations
 
+import html as _htmllib
 import re
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from typing import Optional
 
 # ---------------------------------------------------------------------------
-# Internship detection
+# Internship / early-career detection
+#
+# The audience is people still in school or who just finished university, and
+# undergraduates must be eligible. So we accept two kinds of role:
+#   * unambiguous internships / co-ops / summer programs, and
+#   * new-grad / early-career / campus roles that are NOT senior/experienced.
+# Detection runs on the *title* (and ATS commitment/employment-type fields),
+# never the long description body, to avoid false positives from boilerplate
+# that merely mentions interns.
 # ---------------------------------------------------------------------------
 
-# Word-boundary matches so we don't trip on "internal" / "international".
-_INTERN_PATTERNS = [
-    r"\binterns?\b",
-    r"\binternships?\b",
-    r"\bco-?op\b",
-    r"\bsummer\s+20\d{2}\b",
-    r"\bindustrial\s+placement\b",
-    r"\bplacement\s+year\b",
-]
-_INTERN_RE = re.compile("|".join(_INTERN_PATTERNS), re.IGNORECASE)
+# Unambiguous student-internship signals.
+_INTERN_STRONG_RE = re.compile(
+    r"\b(interns?|internships?|co-?op|summer\s+analyst|summer\s+associate|"
+    r"industrial\s+placement|placement\s+year|apprentice(?:ship)?|trainee)\b",
+    re.IGNORECASE,
+)
+_SUMMER_YEAR_RE = re.compile(r"\bsummer\s+20\d{2}\b", re.IGNORECASE)
+
+# Broader student / recent-grad roles (only when not senior — see below).
+_EARLY_CAREER_RE = re.compile(
+    r"\b(new\s+grad(?:uate)?|recent\s+graduate|university\s+graduate|"
+    r"graduate\s+(?:programme|program|scheme|analyst)|early\s+career|"
+    r"early\s+talent|campus\s+(?:hire|program|ambassador)|working\s+student|"
+    r"student\s+(?:worker|position|role))\b",
+    re.IGNORECASE,
+)
+
+# Experienced / leadership signals that disqualify a role for students.
+_SENIOR_RE = re.compile(
+    r"\b(senior|sr\.?|staff|principal|lead|manager|director|head\s+of|"
+    r"vp|vice\s+president|experienced|expert|architect|fellow|"
+    r"ii|iii|iv|2|3)\b",
+    re.IGNORECASE,
+)
 
 # Things that look intern-ish but are not student internships.
 _INTERN_NEGATIVE_RE = re.compile(
-    r"\b(internal\s+(only|posting|transfer)|intern(al)?\s+medicine|"
-    r"internist|internationally?)\b",
+    r"\b(internal\s+(only|posting|transfer|communications?|audit|mobility)|"
+    r"intern(al)?\s+medicine|internist|internationally?)\b",
     re.IGNORECASE,
 )
 
 
 def looks_like_internship(*texts: Optional[str]) -> bool:
-    """True if any of the supplied strings indicates a student internship."""
-    blob = " ".join(t for t in texts if t)
-    if not blob.strip():
+    """True if the supplied title/commitment text describes a student-eligible
+    internship or early-career role (and not a senior/experienced position)."""
+    blob = " ".join(t for t in texts if t).strip()
+    if not blob:
         return False
-    if not _INTERN_RE.search(blob):
-        return False
-    # Guard against false positives, but only when there is no strong signal.
-    if _INTERN_NEGATIVE_RE.search(blob) and not re.search(
-        r"\binternship\b|\bco-?op\b|\bsummer\s+20\d{2}\b", blob, re.IGNORECASE
-    ):
-        return False
-    return True
+
+    # 1) Unambiguous internship signals win outright.
+    if _INTERN_STRONG_RE.search(blob) or _SUMMER_YEAR_RE.search(blob):
+        if _INTERN_NEGATIVE_RE.search(blob) and not re.search(
+            r"\b(internship|co-?op|summer\s+20\d{2})\b", blob, re.IGNORECASE
+        ):
+            return False
+        return True
+
+    # 2) New-grad / early-career roles, but never senior/experienced ones.
+    if _EARLY_CAREER_RE.search(blob) and not _SENIOR_RE.search(blob):
+        return True
+
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -83,18 +113,28 @@ class _TextExtractor(HTMLParser):
         return joined.strip()
 
 
-def html_to_text(html: Optional[str]) -> str:
-    if not html:
+def html_to_text(raw: Optional[str]) -> str:
+    if not raw:
         return ""
-    if "<" not in html:  # already plain
-        return html.strip()
+    # Some ATS APIs (e.g. Greenhouse) return HTML with its angle brackets
+    # entity-encoded (`&lt;div&gt;...`). Decode entities first so the markup
+    # actually parses instead of leaking "&lt;div class=..." into the output.
+    text = _htmllib.unescape(raw)
+    if "<" not in text:  # already plain
+        return _collapse_ws(text)
     parser = _TextExtractor()
     try:
-        parser.feed(html)
+        parser.feed(text)
     except Exception:
         # Fall back to a crude tag strip if the parser chokes.
-        return re.sub(r"<[^>]+>", " ", html).strip()
+        return _collapse_ws(re.sub(r"<[^>]+>", " ", text))
     return parser.text()
+
+
+def _collapse_ws(text: str) -> str:
+    text = re.sub(r"[ \t]+", " ", text)
+    text = re.sub(r"\n\s*\n\s*\n+", "\n\n", text)
+    return text.strip()
 
 
 def truncate(text: str, limit: int) -> str:
@@ -279,3 +319,84 @@ def looks_closed(page_text: Optional[str]) -> bool:
         return False
     low = page_text.lower()
     return any(marker in low for marker in _CLOSED_MARKERS)
+
+
+# ---------------------------------------------------------------------------
+# US-only location filtering
+# ---------------------------------------------------------------------------
+
+_US_STATE_CODES = {
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID",
+    "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS",
+    "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK",
+    "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV",
+    "WI", "WY", "DC",
+}
+_US_STATE_NAMES = {
+    "alabama", "alaska", "arizona", "arkansas", "california", "colorado",
+    "connecticut", "delaware", "florida", "georgia", "hawaii", "idaho",
+    "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
+    "maryland", "massachusetts", "michigan", "minnesota", "mississippi",
+    "missouri", "montana", "nebraska", "nevada", "new hampshire", "new jersey",
+    "new mexico", "new york", "north carolina", "north dakota", "ohio",
+    "oklahoma", "oregon", "pennsylvania", "rhode island", "south carolina",
+    "south dakota", "tennessee", "texas", "utah", "vermont", "virginia",
+    "washington", "west virginia", "wisconsin", "wyoming",
+    "district of columbia",
+}
+_US_POSITIVE = (
+    "united states", "u.s.a", "u.s.a.", "usa", "u.s.", "u. s.",
+    "remote - us", "remote, us", "remote (us", "us remote", "remote us",
+    "us-remote", "(us)", ", us", "- us", "united states of america",
+)
+# Countries and macro-regions that are clearly NOT the US.
+_NON_US = (
+    "canada", "mexico", "brazil", "brasil", "argentina", "chile", "colombia",
+    "peru", "uruguay", "costa rica", "united kingdom", "u.k.", "uk", "england",
+    "scotland", "wales", "northern ireland", "ireland", "france", "germany",
+    "spain", "portugal", "italy", "netherlands", "belgium", "luxembourg",
+    "switzerland", "austria", "sweden", "norway", "denmark", "finland",
+    "iceland", "poland", "czech", "czechia", "slovakia", "hungary", "romania",
+    "bulgaria", "greece", "croatia", "serbia", "ukraine", "estonia", "latvia",
+    "lithuania", "turkey", "israel", "united arab emirates", "u.a.e", "uae",
+    "dubai", "abu dhabi", "saudi", "qatar", "kuwait", "bahrain", "egypt",
+    "morocco", "south africa", "nigeria", "kenya", "ghana", "india", "pakistan",
+    "bangladesh", "sri lanka", "china", "hong kong", "taiwan", "japan",
+    "south korea", "korea", "singapore", "malaysia", "indonesia", "thailand",
+    "vietnam", "philippines", "australia", "new zealand",
+    # Macro-regions used in remote postings.
+    "emea", "apac", "latam", "asia pacific", "asia-pacific", "europe",
+    "middle east", "africa", "oceania",
+)
+
+
+def location_us_status(loc: Optional[str]):
+    """Return True (US), False (definitely non-US), or None (unknown)."""
+    if not loc:
+        return None
+    low = loc.lower()
+    for token in _NON_US:
+        if re.search(r"\b" + re.escape(token) + r"\b", low):
+            return False
+    if any(p in low for p in _US_POSITIVE):
+        return True
+    m = re.search(r",\s*([A-Za-z]{2})\b", loc)
+    if m and m.group(1).upper() in _US_STATE_CODES:
+        return True
+    for name in _US_STATE_NAMES:
+        if re.search(r"\b" + name + r"\b", low):
+            return True
+    if "remote" in low:   # bare "Remote" with no foreign marker → treat as US
+        return True
+    return None
+
+
+def filter_us_locations(locations: list[str]):
+    """Given a posting's locations, return (is_us, us_locations).
+
+    `is_us` is True only when at least one location is positively in the US.
+    The returned list contains just the US-based locations, so announcements
+    never show foreign offices.
+    """
+    us = [loc for loc in locations if location_us_status(loc) is True]
+    return (bool(us), us)

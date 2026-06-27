@@ -41,7 +41,7 @@ class LeverSource(Source):
             commitment = cats.get("commitment", "")
             desc = html_to_text(job.get("descriptionPlain") or job.get("description", ""))
 
-            if not looks_like_internship(title, commitment, desc[:400]):
+            if not looks_like_internship(title, commitment):
                 continue
 
             locations = []
