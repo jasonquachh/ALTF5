@@ -37,5 +37,5 @@ jobs:
 
       - name: Run scraper
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORDWEBHOOK }}
         run: python -m fortune_scraper.cli run -v
