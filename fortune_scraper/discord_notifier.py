@@ -10,13 +10,13 @@ from __future__ import annotations
 
 import logging
 import time
-from typing import Iterable
 
 from .models import Internship
 
 log = logging.getLogger(__name__)
 
-EMBED_LIMIT = 10            # Discord max embeds per webhook message
+EMBED_LIMIT = 10            # Discord hard limit: max embeds per webhook message
+MAX_MESSAGE_CHARS = 5500   # Discord rejects a message whose embeds total > 6000
 COLOR_NEW = 0x2ECC71       # green – freshly opened
 COLOR_OPEN = 0x3498DB      # blue  – already open (backfill)
 
@@ -80,17 +80,38 @@ class DiscordNotifier:
         self.username = username
         self.dry_run = dry_run or not webhook_url
 
-    def announce(self, items: list[tuple[Internship, bool]]) -> int:
+    def announce(self, items: list[tuple[Internship, bool]]) -> list[Internship]:
         """Send announcements. `items` is a list of (internship, is_new).
 
-        Returns the number successfully delivered.
+        Embeds are packed into messages that stay under both Discord's 10-embed
+        and ~6000-character-per-message limits. Returns the list of internships
+        that were actually delivered, so the caller marks exactly those as
+        pushed (a partially-failed batch must not mark the wrong ones).
         """
-        sent = 0
-        for batch in _chunk(items, EMBED_LIMIT):
-            embeds = [build_embed(it, is_new) for it, is_new in batch]
-            if self._send(embeds):
-                sent += len(batch)
-        return sent
+        # Pre-render each embed once and measure it.
+        rendered = [(it, build_embed(it, is_new)) for it, is_new in items]
+
+        delivered: list[Internship] = []
+        batch: list[tuple[Internship, dict]] = []
+        batch_chars = 0
+
+        def flush() -> None:
+            nonlocal batch, batch_chars
+            if not batch:
+                return
+            if self._send([e for _, e in batch]):
+                delivered.extend(it for it, _ in batch)
+            batch = []
+            batch_chars = 0
+
+        for it, embed in rendered:
+            size = _embed_size(embed)
+            if batch and (len(batch) >= EMBED_LIMIT or batch_chars + size > MAX_MESSAGE_CHARS):
+                flush()
+            batch.append((it, embed))
+            batch_chars += size
+        flush()
+        return delivered
 
     def _send(self, embeds: list[dict]) -> bool:
         payload = {"username": self.username, "embeds": embeds}
@@ -115,6 +136,11 @@ class DiscordNotifier:
         return False
 
 
-def _chunk(seq: list, size: int) -> Iterable[list]:
-    for i in range(0, len(seq), size):
-        yield seq[i : i + size]
+def _embed_size(embed: dict) -> int:
+    """Approximate the character count Discord charges an embed against the
+    6000-per-message limit (title + description + every field + footer)."""
+    n = len(embed.get("title") or "") + len(embed.get("description") or "")
+    for f in embed.get("fields", []):
+        n += len(f.get("name", "")) + len(f.get("value", ""))
+    n += len((embed.get("footer") or {}).get("text", ""))
+    return n

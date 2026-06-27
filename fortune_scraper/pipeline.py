@@ -110,12 +110,14 @@ class Pipeline:
             to_announce.sort(
                 key=lambda t: t[0].release_date or datetime.min.replace(tzinfo=timezone.utc)
             )
-            sent = self.notifier.announce(to_announce)
-            # Only persist "pushed" when a real delivery happened. In dry-run we
-            # log what *would* be sent but must NOT mark it pushed, otherwise the
-            # posting is silently swallowed once a real webhook is configured.
+            delivered = self.notifier.announce(to_announce)
+            sent = len(delivered)
+            # Only persist "pushed" for the postings Discord actually accepted.
+            # In dry-run we log what *would* be sent but must NOT mark it pushed,
+            # otherwise the posting is silently swallowed once a real webhook is
+            # configured.
             if not self.notifier.dry_run:
-                for item, _ in to_announce[:sent]:
+                for item in delivered:
                     self.store.mark_pushed(item.uid)
 
         summary = {
