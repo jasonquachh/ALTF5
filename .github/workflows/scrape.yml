@@ -39,9 +39,7 @@ jobs:
 
       - name: Run scraper
         env:
-          # SECURITY: this repo is public, so this URL is visible to everyone and
-          # already lives in git history. Prefer a repository secret instead:
-          #   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          # and regenerate the webhook in Discord (Edit Webhook -> Copy URL).
-          DISCORD_WEBHOOK_URL: https://discord.com/api/webhooks/1520384539044741193/0KnMKSkVg3-y9Gh3B4xUXMaQTjZ97d_uN5ybnAW81BbD9fjciSweVgAnTZQeYstVfbR2
+          # Provided via repository secret (Settings -> Secrets and variables
+          # -> Actions). Never hardcode the URL here — this repo is public.
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: python -m fortune_scraper.cli run -v
