@@ -68,8 +68,8 @@ def load_settings(
         max_backfill_per_run=int(
             os.environ.get("MAX_BACKFILL_PER_RUN", cfg.get("max_backfill_per_run", 25))
         ),
-        max_announce_per_run=int(
-            os.environ.get("MAX_ANNOUNCE_PER_RUN", cfg.get("max_announce_per_run", 0))
+        max_announce_per_run=_as_int(
+            os.environ.get("MAX_ANNOUNCE_PER_RUN"), cfg.get("max_announce_per_run", 0)
         ),
         only_new_since_days=_as_optional_int(
             os.environ.get("ONLY_NEW_SINCE_DAYS"), cfg.get("only_new_since_days")
@@ -93,3 +93,10 @@ def _as_optional_int(env_val, default):
     if env_val not in (None, ""):
         return int(env_val)
     return default
+
+
+def _as_int(env_val, default) -> int:
+    """Like int(), but an unset or empty env var falls back to the default."""
+    if env_val is None or str(env_val).strip() == "":
+        return int(default)
+    return int(env_val)

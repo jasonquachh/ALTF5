@@ -14,6 +14,10 @@ on:
         description: "Wipe dedup history and re-announce all current openings (use ONLY after clearing the Discord channel, to avoid duplicates)"
         type: boolean
         default: false
+      count:
+        description: "Announce this many roles this run (blank = config default of 1)"
+        type: string
+        default: ""
 
 concurrency:
   group: internship-scrape
@@ -54,4 +58,7 @@ jobs:
           # Provided via repository secret (Settings -> Secrets and variables
           # -> Actions). Never hardcode the URL here — this repo is public.
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          # Per-run override for the drip cap; blank on scheduled runs so they
+          # use the config default (1).
+          MAX_ANNOUNCE_PER_RUN: ${{ github.event.inputs.count }}
         run: python -m fortune_scraper.cli run -v
