@@ -36,9 +36,7 @@ companies:
   - {name: Affirm,            type: greenhouse, token: affirm}
   - {name: GitLab,            type: greenhouse, token: gitlab}
   - {name: Cloudflare,        type: greenhouse, token: cloudflare}
-  - {name: HashiCorp,         type: greenhouse, token: hashicorp}
   - {name: Samsara,           type: greenhouse, token: samsara}
-  - {name: Benchling,         type: greenhouse, token: benchling}
   - {name: Asana,             type: greenhouse, token: asana}
   - {name: Twitch,            type: greenhouse, token: twitch}
   - {name: Airtable,          type: greenhouse, token: airtable}
@@ -50,16 +48,13 @@ companies:
   - {name: Chime,             type: greenhouse, token: chime}
   - {name: Nuro,              type: greenhouse, token: nuro}
   - {name: Scale AI,          type: greenhouse, token: scaleai}
-  - {name: Cohere,            type: greenhouse, token: cohere}
   - {name: Anthropic,         type: greenhouse, token: anthropic}
-  - {name: Snowflake,         type: greenhouse, token: snowflakecomputing}
   - {name: Datadog,           type: greenhouse, token: datadog}
   - {name: Sigma Computing,   type: greenhouse, token: sigmacomputing}
 
   # ---- Lever ---------------------------------------------------------------
   - {name: Netflix,           type: lever, token: netflix}
   - {name: Plaid,             type: lever, token: plaid}
-  - {name: Attentive,         type: lever, token: attentive}
 
   # ---- Ashby ---------------------------------------------------------------
   - {name: Ramp,              type: ashby, token: ramp}
@@ -68,10 +63,7 @@ companies:
   - {name: Vanta,             type: ashby, token: vanta}
   - {name: Mercury,           type: ashby, token: mercury}
   - {name: PostHog,           type: ashby, token: posthog}
-  - {name: Runway,            type: ashby, token: runwayml}
-  - {name: Hex,               type: ashby, token: hex}
   - {name: Baseten,           type: ashby, token: baseten}
-  - {name: Clipboard Health,  type: ashby, token: clipboardhealth}
 
   # ---- Workday (most common among the Fortune 500) -------------------------
   # Confirm host/tenant/site on the live careers page before enabling. Disabled
