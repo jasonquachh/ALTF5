@@ -1,84 +1,81 @@
 # =============================================================================
-# Company sources for the Fortune 500 internship scraper.
+# Company sources for the internship / student-program scraper.
 #
-# Each entry points the scraper at one company's public Applicant Tracking
-# System (ATS) feed. Four ATS types are supported, covering the vast majority
-# of large employers:
+# Scope: paid internships, co-ops, and career programs (explore / discovery /
+# insight / scholars / externships, etc.) at reputable companies AND startups.
+# "Reputable" is curated by which companies appear in this list — add the ones
+# you trust. Roles are still filtered to US-based + paid + recent + verified
+# applyable by the pipeline, so a broad company list here is safe.
 #
+# Four ATS types are supported:
 #   greenhouse   token: the slug in  boards.greenhouse.io/<token>
 #   lever        token: the slug in  jobs.lever.co/<token>
 #   ashby        token: the slug in  jobs.ashbyhq.com/<token>
 #   workday      host/tenant/site from the company's myworkdayjobs.com URL
 #
-# HOW TO FIND A SLUG / WORKDAY COORDINATES
-# ----------------------------------------
-#   * Greenhouse: open the careers page, find a job link. If the URL contains
-#     boards.greenhouse.io/acme/jobs/123  ->  token: acme
-#   * Lever: jobs.lever.co/acme/...        ->  token: acme
-#   * Ashby: jobs.ashbyhq.com/acme/...     ->  token: acme
-#   * Workday: the careers URL looks like
-#       https://acme.wd5.myworkdayjobs.com/en-US/External
-#     ->  host: acme.wd5.myworkdayjobs.com,  tenant: acme,  site: External
-#
-# The slugs below are a STARTER SET of large/Fortune-500-class employers using
-# these systems. Verify each one against the company's live careers page (slugs
-# occasionally change) and add your own. Set `enabled: false` to skip an entry
-# without deleting it.
+# Slugs occasionally change. A wrong slug just logs a 404 and is skipped (it
+# shows up in the run summary's "errors" list), so it is safe to leave entries
+# in and prune later. Set `enabled: false` to skip one without deleting it.
 # =============================================================================
 
 companies:
   # ---- Greenhouse ----------------------------------------------------------
-  - name: Stripe
-    type: greenhouse
-    token: stripe
-    enabled: true
-
-  - name: Airbnb
-    type: greenhouse
-    token: airbnb
-    enabled: true
-
-  - name: Coinbase
-    type: greenhouse
-    token: coinbase
-    enabled: true
-
-  - name: Databricks
-    type: greenhouse
-    token: databricks
-    enabled: true
-
-  - name: Robinhood
-    type: greenhouse
-    token: robinhood
-    enabled: true
+  - {name: Stripe,            type: greenhouse, token: stripe}
+  - {name: Airbnb,            type: greenhouse, token: airbnb}
+  - {name: Coinbase,          type: greenhouse, token: coinbase}
+  - {name: Databricks,        type: greenhouse, token: databricks}
+  - {name: Robinhood,         type: greenhouse, token: robinhood}
+  - {name: Brex,              type: greenhouse, token: brex}
+  - {name: Gusto,             type: greenhouse, token: gusto}
+  - {name: Lyft,              type: greenhouse, token: lyft}
+  - {name: Dropbox,           type: greenhouse, token: dropbox}
+  - {name: Instacart,         type: greenhouse, token: instacart}
+  - {name: Discord,           type: greenhouse, token: discord}
+  - {name: Reddit,            type: greenhouse, token: reddit}
+  - {name: Pinterest,         type: greenhouse, token: pinterest}
+  - {name: Affirm,            type: greenhouse, token: affirm}
+  - {name: GitLab,            type: greenhouse, token: gitlab}
+  - {name: Cloudflare,        type: greenhouse, token: cloudflare}
+  - {name: HashiCorp,         type: greenhouse, token: hashicorp}
+  - {name: Samsara,           type: greenhouse, token: samsara}
+  - {name: Benchling,         type: greenhouse, token: benchling}
+  - {name: Asana,             type: greenhouse, token: asana}
+  - {name: Twitch,            type: greenhouse, token: twitch}
+  - {name: Airtable,          type: greenhouse, token: airtable}
+  - {name: Webflow,           type: greenhouse, token: webflow}
+  - {name: Faire,             type: greenhouse, token: faire}
+  - {name: Gemini,            type: greenhouse, token: gemini}
+  - {name: Flexport,          type: greenhouse, token: flexport}
+  - {name: SoFi,              type: greenhouse, token: sofi}
+  - {name: Chime,             type: greenhouse, token: chime}
+  - {name: Nuro,              type: greenhouse, token: nuro}
+  - {name: Scale AI,          type: greenhouse, token: scaleai}
+  - {name: Cohere,            type: greenhouse, token: cohere}
+  - {name: Anthropic,         type: greenhouse, token: anthropic}
+  - {name: Snowflake,         type: greenhouse, token: snowflakecomputing}
+  - {name: Datadog,           type: greenhouse, token: datadog}
+  - {name: Sigma Computing,   type: greenhouse, token: sigmacomputing}
 
   # ---- Lever ---------------------------------------------------------------
-  - name: Netflix
-    type: lever
-    token: netflix
-    enabled: true
-
-  - name: Plaid
-    type: lever
-    token: plaid
-    enabled: true
+  - {name: Netflix,           type: lever, token: netflix}
+  - {name: Plaid,             type: lever, token: plaid}
+  - {name: Attentive,         type: lever, token: attentive}
 
   # ---- Ashby ---------------------------------------------------------------
-  - name: Ramp
-    type: ashby
-    token: ramp
-    enabled: true
-
-  - name: Notion
-    type: ashby
-    token: notion
-    enabled: true
+  - {name: Ramp,              type: ashby, token: ramp}
+  - {name: Notion,            type: ashby, token: notion}
+  - {name: Linear,            type: ashby, token: linear}
+  - {name: Vanta,             type: ashby, token: vanta}
+  - {name: Mercury,           type: ashby, token: mercury}
+  - {name: PostHog,           type: ashby, token: posthog}
+  - {name: Runway,            type: ashby, token: runwayml}
+  - {name: Hex,               type: ashby, token: hex}
+  - {name: Baseten,           type: ashby, token: baseten}
+  - {name: Clipboard Health,  type: ashby, token: clipboardhealth}
 
   # ---- Workday (most common among the Fortune 500) -------------------------
-  # NOTE: confirm host/tenant/site on the live careers page before enabling.
-  # Disabled by default because Workday coordinates vary per company and a
-  # wrong host produces noisy errors.
+  # Confirm host/tenant/site on the live careers page before enabling. Disabled
+  # by default because Workday coordinates vary per company.
   - name: Example Workday Corp
     type: workday
     host: example.wd5.myworkdayjobs.com

@@ -17,6 +17,7 @@ class Settings:
     db_path: str = "internships.db"
     verify_applyable: bool = True
     us_only: bool = True
+    exclude_unpaid: bool = True
     announce_backfill: bool = True
     max_backfill_per_run: int = 25
     max_announce_per_run: int = 0          # 0 = unlimited; set to 1 for a drip feed
@@ -58,6 +59,9 @@ def load_settings(
             os.environ.get("VERIFY_APPLYABLE"), cfg.get("verify_applyable", True)
         ),
         us_only=_as_bool(os.environ.get("US_ONLY"), cfg.get("us_only", True)),
+        exclude_unpaid=_as_bool(
+            os.environ.get("EXCLUDE_UNPAID"), cfg.get("exclude_unpaid", True)
+        ),
         announce_backfill=_as_bool(
             os.environ.get("ANNOUNCE_BACKFILL"), cfg.get("announce_backfill", True)
         ),

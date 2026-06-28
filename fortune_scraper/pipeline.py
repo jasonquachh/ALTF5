@@ -23,7 +23,7 @@ from .config import Settings
 from .discord_notifier import DiscordNotifier
 from .http_client import build_session, polite_sleep
 from .models import Internship
-from .parsing import filter_us_locations
+from .parsing import filter_us_locations, looks_unpaid
 from .sources import build_source
 from .store import Store
 from .verifier import Verifier
@@ -87,6 +87,12 @@ class Pipeline:
                         log.info("Skipping non-US role: %s %s", item, item.locations)
                         continue
                     item.locations = us_locs
+
+                # Paid-only: drop roles that explicitly state they are unpaid /
+                # for academic credit. (Anything with listed comp is kept.)
+                if s.exclude_unpaid and not item.salary and looks_unpaid(item.description):
+                    log.info("Skipping unpaid role: %s", item)
+                    continue
 
                 is_new = self.store.upsert_seen(item)
                 already_pushed = self.store.is_pushed(item.uid)

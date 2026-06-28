@@ -13,6 +13,10 @@ verify_applyable: true
 # are skipped, and any foreign offices are trimmed from the displayed locations.
 us_only: true
 
+# Paid-only: skip postings that explicitly say they are unpaid / for academic
+# credit. Anything with listed compensation is always kept.
+exclude_unpaid: true
+
 # On first run (and whenever new companies are added), announce internships
 # that are already open — not just ones that open from now on.
 announce_backfill: true
@@ -26,9 +30,9 @@ max_backfill_per_run: 25
 # Roles above the cap simply carry over to the next run.
 max_announce_per_run: 1
 
-# Optionally ignore postings whose release date is older than this many days.
-# Leave null to consider every currently-open posting. Example: 30
-only_new_since_days: null
+# Recency: ignore postings whose release date is older than this many days, so
+# the feed stays current. Postings with no release date are kept (can't tell).
+only_new_since_days: 120
 
 # Politeness delay between companies (seconds).
 request_delay_seconds: 0.5

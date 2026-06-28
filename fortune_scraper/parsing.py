@@ -13,21 +13,22 @@ from html.parser import HTMLParser
 from typing import Optional
 
 # ---------------------------------------------------------------------------
-# Internship / early-career detection
+# Student-opportunity detection
 #
-# The audience is people still in school or who just finished university, and
-# undergraduates must be eligible. So we accept two kinds of role:
-#   * unambiguous internships / co-ops / summer programs, and
-#   * new-grad / early-career / campus roles that are NOT senior/experienced.
+# We want any opportunity aimed at helping a student's career: internships,
+# co-ops, and the many named "programs" companies run — explore / discovery /
+# insight / scholars / externships / sophomore & freshman programs, etc. The
+# audience is people still in school or who just finished university, and
+# undergraduates must be eligible, so we exclude senior/experienced roles.
 # Detection runs on the *title* (and ATS commitment/employment-type fields),
-# never the long description body, to avoid false positives from boilerplate
-# that merely mentions interns.
+# never the long description body, to avoid false positives from boilerplate.
 # ---------------------------------------------------------------------------
 
 # Unambiguous student-internship signals.
 _INTERN_STRONG_RE = re.compile(
     r"\b(interns?|internships?|co-?op|summer\s+analyst|summer\s+associate|"
-    r"industrial\s+placement|placement\s+year|apprentice(?:ship)?|trainee)\b",
+    r"industrial\s+placement|placement\s+year|apprentice(?:ship)?|trainee|"
+    r"externship)\b",
     re.IGNORECASE,
 )
 _SUMMER_YEAR_RE = re.compile(r"\bsummer\s+20\d{2}\b", re.IGNORECASE)
@@ -36,15 +37,38 @@ _SUMMER_YEAR_RE = re.compile(r"\bsummer\s+20\d{2}\b", re.IGNORECASE)
 _EARLY_CAREER_RE = re.compile(
     r"\b(new\s+grad(?:uate)?|recent\s+graduate|university\s+graduate|"
     r"graduate\s+(?:programme|program|scheme|analyst)|early\s+career|"
-    r"early\s+talent|campus\s+(?:hire|program|ambassador)|working\s+student|"
-    r"student\s+(?:worker|position|role))\b",
+    r"early\s+talent|emerging\s+talent|campus\s+(?:hire|program|ambassador)|"
+    r"working\s+student|student\s+(?:worker|position|role|opportunit\w+))\b",
+    re.IGNORECASE,
+)
+
+# Named student/career programs: a student signal next to a "program" word, plus
+# a few standalone program types. Catches Microsoft Explore, "...Discovery
+# Program", "Insight Day", "Sophomore Scholars", externships, fellowships, etc.
+_PROGRAM_SIGNAL = (
+    r"(?:explore\w*|discover\w*|insight\w*|emerging\s+talent|future\s+leaders?|"
+    r"rising\s+(?:sophomore|junior|senior)|sophomore|freshman|first[-\s]?year|"
+    r"scholars?|pathways?|launch|ignite|catalyst|propel|elevate|spark|immersion|"
+    r"academy|student|students|campus|university|college|undergrad\w*|"
+    r"early[-\s]?(?:career|talent|insight)|women(?:'s|s)?|diversity|"
+    r"underrepresented)"
+)
+_PROGRAM_WORD = (
+    r"(?:program|programme|scheme|experience|cohort|fellowship|externship|"
+    r"academy|institute|bootcamp|residency|pipeline|initiative|"
+    r"insight\s+days?|days?|series)"
+)
+_PROGRAM_RE = re.compile(
+    r"\b(?:externship|fellowship)\b"
+    r"|\b" + _PROGRAM_SIGNAL + r"[\w&/,'\- ]{0,30}?\b" + _PROGRAM_WORD + r"\b"
+    r"|\b" + _PROGRAM_WORD + r"[\w&/,'\- ]{0,30}?\b" + _PROGRAM_SIGNAL + r"\b",
     re.IGNORECASE,
 )
 
 # Experienced / leadership signals that disqualify a role for students.
 _SENIOR_RE = re.compile(
     r"\b(senior|sr\.?|staff|principal|lead|manager|director|head\s+of|"
-    r"vp|vice\s+president|experienced|expert|architect|fellow|"
+    r"vp|vice\s+president|experienced|expert|architect|"
     r"ii|iii|iv|2|3)\b",
     re.IGNORECASE,
 )
@@ -58,8 +82,8 @@ _INTERN_NEGATIVE_RE = re.compile(
 
 
 def looks_like_internship(*texts: Optional[str]) -> bool:
-    """True if the supplied title/commitment text describes a student-eligible
-    internship or early-career role (and not a senior/experienced position)."""
+    """True if the title/commitment describes a student-eligible internship,
+    co-op, or career program (and not a senior/experienced position)."""
     blob = " ".join(t for t in texts if t).strip()
     if not blob:
         return False
@@ -67,16 +91,38 @@ def looks_like_internship(*texts: Optional[str]) -> bool:
     # 1) Unambiguous internship signals win outright.
     if _INTERN_STRONG_RE.search(blob) or _SUMMER_YEAR_RE.search(blob):
         if _INTERN_NEGATIVE_RE.search(blob) and not re.search(
-            r"\b(internship|co-?op|summer\s+20\d{2})\b", blob, re.IGNORECASE
+            r"\b(internship|co-?op|summer\s+20\d{2}|externship)\b", blob, re.IGNORECASE
         ):
             return False
         return True
 
-    # 2) New-grad / early-career roles, but never senior/experienced ones.
-    if _EARLY_CAREER_RE.search(blob) and not _SENIOR_RE.search(blob):
+    # 2) New-grad / early-career roles and named student programs, but never
+    #    senior/experienced ones.
+    if (_EARLY_CAREER_RE.search(blob) or _PROGRAM_RE.search(blob)) and not \
+            _SENIOR_RE.search(blob):
         return True
 
     return False
+
+
+# ---------------------------------------------------------------------------
+# Paid / unpaid detection
+# ---------------------------------------------------------------------------
+
+_UNPAID_RE = re.compile(
+    r"\b(unpaid|without\s+(?:pay|compensation)|no\s+(?:pay|compensation|salary|"
+    r"stipend|monetary)|not\s+(?:a\s+)?paid|volunteer|voluntary|"
+    r"(?:course|academic|school)\s+credit\s+only|"
+    r"only\s+(?:for\s+)?(?:course|academic|school)\s+credit)\b",
+    re.IGNORECASE,
+)
+
+
+def looks_unpaid(text: Optional[str]) -> bool:
+    """True only when a posting explicitly states it is unpaid / for credit."""
+    if not text:
+        return False
+    return bool(_UNPAID_RE.search(text))
 
 
 # ---------------------------------------------------------------------------

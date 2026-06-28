@@ -44,6 +44,35 @@ class TestEarlyCareerDetection:
         assert not parsing.looks_like_internship("Backend Engineer")
 
 
+class TestProgramDetection:
+    def test_named_programs_included(self):
+        assert parsing.looks_like_internship("Microsoft Explore Program")
+        assert parsing.looks_like_internship("Tech Discovery Program")
+        assert parsing.looks_like_internship("Sophomore Insight Day")
+        assert parsing.looks_like_internship("Engineering Externship")
+        assert parsing.looks_like_internship("Women in Tech Fellowship")
+        assert parsing.looks_like_internship("Emerging Talent Program")
+        assert parsing.looks_like_internship("Scholars Program, Data Science")
+
+    def test_non_student_programs_excluded(self):
+        assert not parsing.looks_like_internship("Program Manager")
+        assert not parsing.looks_like_internship("Director of Programs")
+        assert not parsing.looks_like_internship("Senior Program Manager, Campus")
+        assert not parsing.looks_like_internship("Engineering Program")  # no student signal
+
+
+class TestPaidDetection:
+    def test_unpaid_flagged(self):
+        assert parsing.looks_unpaid("This is an unpaid internship")
+        assert parsing.looks_unpaid("Offered for academic credit only")
+        assert parsing.looks_unpaid("This is a volunteer position")
+
+    def test_paid_not_flagged(self):
+        assert not parsing.looks_unpaid("Competitive salary and equity")
+        assert not parsing.looks_unpaid("$30/hour plus benefits")
+        assert not parsing.looks_unpaid(None)
+
+
 class TestHtmlToText:
     def test_strips_tags_and_keeps_bullets(self):
         html = "<p>Hello</p><ul><li>One</li><li>Two</li></ul><script>x=1</script>"
