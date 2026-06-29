@@ -34,8 +34,9 @@ max_announce_per_run: 1
 # the feed stays current. Postings with no release date are kept (can't tell).
 only_new_since_days: 120
 
-# Politeness delay between companies (seconds).
-request_delay_seconds: 0.5
+# Politeness delay between companies (seconds). Kept small since the list is
+# large; the ATS APIs are public and lightweight.
+request_delay_seconds: 0.3
 
 # Display name the webhook posts under.
 discord_username: Internship Radar

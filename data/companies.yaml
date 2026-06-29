@@ -2,22 +2,20 @@
 # Company sources for the internship / student-program scraper.
 #
 # Scope: paid internships, co-ops, and career programs (explore / discovery /
-# insight / scholars / externships / research / rotational / leadership-dev,
-# etc.) across many sectors — tech, fintech, healthcare & biotech (pre-med),
-# consumer / marketing / media, and data & analytics. Detection is field-
-# agnostic, so "Marketing Intern", "Data Analytics Intern", and "Clinical
-# Research Intern" all qualify; sector coverage comes from the companies below.
+# insight / scholars / externships / research / rotational / leadership-dev)
+# across tech, fintech, healthcare & biotech (pre-med), consumer / marketing /
+# media, and data & analytics. Detection is field-agnostic, so marketing,
+# data-analytics, and clinical/pre-med intern titles all qualify.
 #
-# Roles are still filtered to US-based + paid + recent + verified-applyable by
-# the pipeline, so a broad company list here is safe.
+# Roles are filtered to US-based + paid + recent + verified-applyable.
+# A wrong slug just logs a 404 and is skipped (shown in the run summary), so it
+# is safe to leave entries in and prune later. The list below has had known
+# 404 slugs removed; remaining entries fetched successfully in a recent run.
 #
 # ATS types:  greenhouse -> boards.greenhouse.io/<token>
 #             lever      -> jobs.lever.co/<token>
 #             ashby      -> jobs.ashbyhq.com/<token>
 #             workday    -> host/tenant/site from myworkdayjobs.com
-#
-# A wrong slug just logs a 404 and is skipped (shown in the run summary's
-# "errors" list), so it is safe to leave entries in and prune later.
 # =============================================================================
 
 companies:
@@ -41,7 +39,6 @@ companies:
   - {name: Airtable,          type: greenhouse, token: airtable}
   - {name: Webflow,           type: greenhouse, token: webflow}
   - {name: Squarespace,       type: greenhouse, token: squarespace}
-  - {name: Grammarly,         type: greenhouse, token: grammarly}
   - {name: Unity,             type: greenhouse, token: unity3d}
   - {name: Roblox,            type: greenhouse, token: roblox}
   - {name: Twilio,            type: greenhouse, token: twilio}
@@ -49,11 +46,21 @@ companies:
   - {name: Anthropic,         type: greenhouse, token: anthropic}
   - {name: Scale AI,          type: greenhouse, token: scaleai}
   - {name: Nuro,              type: greenhouse, token: nuro}
+  # newly added candidates (tech)
+  - {name: PagerDuty,         type: greenhouse, token: pagerduty}
+  - {name: Confluent,         type: greenhouse, token: confluent}
+  - {name: Elastic,           type: greenhouse, token: elastic}
+  - {name: Sourcegraph,       type: greenhouse, token: sourcegraph}
+  - {name: Airbyte,           type: greenhouse, token: airbyte}
+  - {name: Postman,           type: greenhouse, token: postman}
+  - {name: MongoDB,           type: greenhouse, token: mongodb}
+  - {name: New Relic,         type: greenhouse, token: newrelic}
   - {name: Notion,            type: ashby,      token: notion}
   - {name: Linear,            type: ashby,      token: linear}
   - {name: Vanta,             type: ashby,      token: vanta}
   - {name: PostHog,           type: ashby,      token: posthog}
   - {name: Baseten,           type: ashby,      token: baseten}
+  - {name: ElevenLabs,        type: ashby,      token: elevenlabs}
   - {name: Netflix,           type: lever,      token: netflix}
 
   # ================================ FINTECH ================================
@@ -65,63 +72,59 @@ companies:
   - {name: Marqeta,           type: greenhouse, token: marqeta}
   - {name: Carta,             type: greenhouse, token: carta}
   - {name: Betterment,        type: greenhouse, token: betterment}
-  - {name: Wealthfront,       type: greenhouse, token: wealthfront}
-  - {name: NerdWallet,        type: greenhouse, token: nerdwallet}
+  # newly added candidates (fintech / crypto)
+  - {name: Circle,            type: greenhouse, token: circle}
+  - {name: Kraken,            type: greenhouse, token: kraken}
+  - {name: Alchemy,           type: greenhouse, token: alchemy}
+  - {name: Modern Treasury,   type: greenhouse, token: moderntreasury}
+  - {name: Addepar,           type: greenhouse, token: addepar}
   - {name: Ramp,              type: ashby,      token: ramp}
   - {name: Mercury,           type: ashby,      token: mercury}
   - {name: Plaid,             type: lever,      token: plaid}
 
   # ===================== HEALTHCARE / BIOTECH (pre-med) ====================
-  - {name: Tempus,            type: greenhouse, token: tempus}
   - {name: Ginkgo Bioworks,   type: greenhouse, token: ginkgobioworks}
   - {name: Recursion,         type: greenhouse, token: recursionpharmaceuticals}
-  - {name: 23andMe,           type: greenhouse, token: 23andme}
-  - {name: Color,             type: greenhouse, token: colorgenomics}
-  - {name: Devoted Health,    type: greenhouse, token: devotedhealth}
-  - {name: Cityblock Health,  type: greenhouse, token: cityblockhealth}
   - {name: Komodo Health,     type: greenhouse, token: komodohealth}
   - {name: Flatiron Health,   type: greenhouse, token: flatironhealth}
-  - {name: Included Health,   type: greenhouse, token: includedhealth}
   - {name: Maven Clinic,      type: greenhouse, token: mavenclinic}
-  - {name: Spring Health,     type: greenhouse, token: springhealth}
   - {name: Cohere Health,     type: greenhouse, token: coherehealth}
   - {name: Zocdoc,            type: greenhouse, token: zocdoc}
-  - {name: Headway,           type: greenhouse, token: headway}
-  - {name: Hims & Hers,       type: greenhouse, token: hims}
-  - {name: Carbon Health,     type: greenhouse, token: carbonhealth}
+  # newly added candidates (health / biotech)
+  - {name: Cedar,             type: greenhouse, token: cedar}
+  - {name: Commure,           type: greenhouse, token: commure}
+  - {name: Benchling,         type: greenhouse, token: benchlingcareers}
+  - {name: Oscar Health,      type: greenhouse, token: hioscar}
+  - {name: Verily,            type: greenhouse, token: verily}
 
   # =================== CONSUMER / MARKETING / MEDIA ========================
-  - {name: Warby Parker,      type: greenhouse, token: warbyparker}
   - {name: Glossier,          type: greenhouse, token: glossier}
-  - {name: Allbirds,          type: greenhouse, token: allbirds}
   - {name: Sweetgreen,        type: greenhouse, token: sweetgreen}
-  - {name: Chewy,             type: greenhouse, token: chewy}
   - {name: Peloton,           type: greenhouse, token: peloton}
-  - {name: Wayfair,           type: greenhouse, token: wayfair}
-  - {name: Etsy,              type: greenhouse, token: etsy}
   - {name: Nextdoor,          type: greenhouse, token: nextdoor}
   - {name: Duolingo,          type: greenhouse, token: duolingo}
-  - {name: Patreon,           type: greenhouse, token: patreon}
-  - {name: Vimeo,             type: greenhouse, token: vimeo}
   - {name: Vox Media,         type: greenhouse, token: voxmedia}
   - {name: Faire,             type: greenhouse, token: faire}
   - {name: Flexport,          type: greenhouse, token: flexport}
   - {name: Klaviyo,           type: greenhouse, token: klaviyo}
   - {name: Braze,             type: greenhouse, token: braze}
   - {name: Iterable,          type: greenhouse, token: iterable}
+  # newly added candidates (consumer / marketing)
+  - {name: Whatnot,           type: greenhouse, token: whatnot}
+  - {name: Gopuff,            type: greenhouse, token: gopuff}
+  - {name: Toast,             type: greenhouse, token: toast}
+  - {name: ClassPass,         type: greenhouse, token: classpass}
 
   # ========================== DATA / ANALYTICS ============================
   - {name: Datadog,           type: greenhouse, token: datadog}
   - {name: Sigma Computing,   type: greenhouse, token: sigmacomputing}
   - {name: Amplitude,         type: greenhouse, token: amplitude}
-  - {name: dbt Labs,          type: greenhouse, token: dbtlabs}
   - {name: Fivetran,          type: greenhouse, token: fivetran}
   - {name: Starburst,         type: greenhouse, token: starburst}
   - {name: ClickHouse,        type: greenhouse, token: clickhouse}
   - {name: Gusto,             type: greenhouse, token: gusto}
   - {name: Checkr,            type: greenhouse, token: checkr}
   - {name: Lattice,           type: greenhouse, token: lattice}
-  - {name: Retool,            type: greenhouse, token: retool}
   - {name: Calendly,          type: greenhouse, token: calendly}
 
   # ---- Workday (confirm host/tenant/site before enabling) -----------------
