@@ -54,11 +54,23 @@ class TestProgramDetection:
         assert parsing.looks_like_internship("Emerging Talent Program")
         assert parsing.looks_like_internship("Scholars Program, Data Science")
 
+    def test_premed_data_marketing_and_program_variety(self):
+        # Pre-med / research / rotational program variety the user asked for.
+        assert parsing.looks_like_internship("Summer Undergraduate Research Program")
+        assert parsing.looks_like_internship("Pre-Med Summer Program")
+        assert parsing.looks_like_internship("Leadership Development Program")
+        assert parsing.looks_like_internship("Rotational Analyst Program")
+        # Field-agnostic: any intern title qualifies regardless of discipline.
+        assert parsing.looks_like_internship("Clinical Research Intern")
+        assert parsing.looks_like_internship("Data Analytics Intern")
+        assert parsing.looks_like_internship("Marketing Intern, Summer 2026")
+
     def test_non_student_programs_excluded(self):
         assert not parsing.looks_like_internship("Program Manager")
         assert not parsing.looks_like_internship("Director of Programs")
         assert not parsing.looks_like_internship("Senior Program Manager, Campus")
         assert not parsing.looks_like_internship("Engineering Program")  # no student signal
+        assert not parsing.looks_like_internship("Research Scientist")   # no program word
 
 
 class TestPaidDetection:

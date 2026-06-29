@@ -2,38 +2,37 @@
 # Company sources for the internship / student-program scraper.
 #
 # Scope: paid internships, co-ops, and career programs (explore / discovery /
-# insight / scholars / externships, etc.) at reputable companies AND startups.
-# "Reputable" is curated by which companies appear in this list — add the ones
-# you trust. Roles are still filtered to US-based + paid + recent + verified
-# applyable by the pipeline, so a broad company list here is safe.
+# insight / scholars / externships / research / rotational / leadership-dev,
+# etc.) across many sectors — tech, fintech, healthcare & biotech (pre-med),
+# consumer / marketing / media, and data & analytics. Detection is field-
+# agnostic, so "Marketing Intern", "Data Analytics Intern", and "Clinical
+# Research Intern" all qualify; sector coverage comes from the companies below.
 #
-# Four ATS types are supported:
-#   greenhouse   token: the slug in  boards.greenhouse.io/<token>
-#   lever        token: the slug in  jobs.lever.co/<token>
-#   ashby        token: the slug in  jobs.ashbyhq.com/<token>
-#   workday      host/tenant/site from the company's myworkdayjobs.com URL
+# Roles are still filtered to US-based + paid + recent + verified-applyable by
+# the pipeline, so a broad company list here is safe.
 #
-# Slugs occasionally change. A wrong slug just logs a 404 and is skipped (it
-# shows up in the run summary's "errors" list), so it is safe to leave entries
-# in and prune later. Set `enabled: false` to skip one without deleting it.
+# ATS types:  greenhouse -> boards.greenhouse.io/<token>
+#             lever      -> jobs.lever.co/<token>
+#             ashby      -> jobs.ashbyhq.com/<token>
+#             workday    -> host/tenant/site from myworkdayjobs.com
+#
+# A wrong slug just logs a 404 and is skipped (shown in the run summary's
+# "errors" list), so it is safe to leave entries in and prune later.
 # =============================================================================
 
 companies:
-  # ---- Greenhouse ----------------------------------------------------------
+  # ============================ TECH / SOFTWARE ============================
   - {name: Stripe,            type: greenhouse, token: stripe}
   - {name: Airbnb,            type: greenhouse, token: airbnb}
   - {name: Coinbase,          type: greenhouse, token: coinbase}
   - {name: Databricks,        type: greenhouse, token: databricks}
   - {name: Robinhood,         type: greenhouse, token: robinhood}
-  - {name: Brex,              type: greenhouse, token: brex}
-  - {name: Gusto,             type: greenhouse, token: gusto}
-  - {name: Lyft,              type: greenhouse, token: lyft}
   - {name: Dropbox,           type: greenhouse, token: dropbox}
   - {name: Instacart,         type: greenhouse, token: instacart}
+  - {name: Lyft,              type: greenhouse, token: lyft}
   - {name: Discord,           type: greenhouse, token: discord}
   - {name: Reddit,            type: greenhouse, token: reddit}
   - {name: Pinterest,         type: greenhouse, token: pinterest}
-  - {name: Affirm,            type: greenhouse, token: affirm}
   - {name: GitLab,            type: greenhouse, token: gitlab}
   - {name: Cloudflare,        type: greenhouse, token: cloudflare}
   - {name: Samsara,           type: greenhouse, token: samsara}
@@ -41,33 +40,91 @@ companies:
   - {name: Twitch,            type: greenhouse, token: twitch}
   - {name: Airtable,          type: greenhouse, token: airtable}
   - {name: Webflow,           type: greenhouse, token: webflow}
-  - {name: Faire,             type: greenhouse, token: faire}
-  - {name: Gemini,            type: greenhouse, token: gemini}
-  - {name: Flexport,          type: greenhouse, token: flexport}
-  - {name: SoFi,              type: greenhouse, token: sofi}
-  - {name: Chime,             type: greenhouse, token: chime}
-  - {name: Nuro,              type: greenhouse, token: nuro}
-  - {name: Scale AI,          type: greenhouse, token: scaleai}
+  - {name: Squarespace,       type: greenhouse, token: squarespace}
+  - {name: Grammarly,         type: greenhouse, token: grammarly}
+  - {name: Unity,             type: greenhouse, token: unity3d}
+  - {name: Roblox,            type: greenhouse, token: roblox}
+  - {name: Twilio,            type: greenhouse, token: twilio}
+  - {name: Cockroach Labs,    type: greenhouse, token: cockroachlabs}
   - {name: Anthropic,         type: greenhouse, token: anthropic}
+  - {name: Scale AI,          type: greenhouse, token: scaleai}
+  - {name: Nuro,              type: greenhouse, token: nuro}
+  - {name: Notion,            type: ashby,      token: notion}
+  - {name: Linear,            type: ashby,      token: linear}
+  - {name: Vanta,             type: ashby,      token: vanta}
+  - {name: PostHog,           type: ashby,      token: posthog}
+  - {name: Baseten,           type: ashby,      token: baseten}
+  - {name: Netflix,           type: lever,      token: netflix}
+
+  # ================================ FINTECH ================================
+  - {name: Brex,              type: greenhouse, token: brex}
+  - {name: Affirm,            type: greenhouse, token: affirm}
+  - {name: Chime,             type: greenhouse, token: chime}
+  - {name: SoFi,              type: greenhouse, token: sofi}
+  - {name: Gemini,            type: greenhouse, token: gemini}
+  - {name: Marqeta,           type: greenhouse, token: marqeta}
+  - {name: Carta,             type: greenhouse, token: carta}
+  - {name: Betterment,        type: greenhouse, token: betterment}
+  - {name: Wealthfront,       type: greenhouse, token: wealthfront}
+  - {name: NerdWallet,        type: greenhouse, token: nerdwallet}
+  - {name: Ramp,              type: ashby,      token: ramp}
+  - {name: Mercury,           type: ashby,      token: mercury}
+  - {name: Plaid,             type: lever,      token: plaid}
+
+  # ===================== HEALTHCARE / BIOTECH (pre-med) ====================
+  - {name: Tempus,            type: greenhouse, token: tempus}
+  - {name: Ginkgo Bioworks,   type: greenhouse, token: ginkgobioworks}
+  - {name: Recursion,         type: greenhouse, token: recursionpharmaceuticals}
+  - {name: 23andMe,           type: greenhouse, token: 23andme}
+  - {name: Color,             type: greenhouse, token: colorgenomics}
+  - {name: Devoted Health,    type: greenhouse, token: devotedhealth}
+  - {name: Cityblock Health,  type: greenhouse, token: cityblockhealth}
+  - {name: Komodo Health,     type: greenhouse, token: komodohealth}
+  - {name: Flatiron Health,   type: greenhouse, token: flatironhealth}
+  - {name: Included Health,   type: greenhouse, token: includedhealth}
+  - {name: Maven Clinic,      type: greenhouse, token: mavenclinic}
+  - {name: Spring Health,     type: greenhouse, token: springhealth}
+  - {name: Cohere Health,     type: greenhouse, token: coherehealth}
+  - {name: Zocdoc,            type: greenhouse, token: zocdoc}
+  - {name: Headway,           type: greenhouse, token: headway}
+  - {name: Hims & Hers,       type: greenhouse, token: hims}
+  - {name: Carbon Health,     type: greenhouse, token: carbonhealth}
+
+  # =================== CONSUMER / MARKETING / MEDIA ========================
+  - {name: Warby Parker,      type: greenhouse, token: warbyparker}
+  - {name: Glossier,          type: greenhouse, token: glossier}
+  - {name: Allbirds,          type: greenhouse, token: allbirds}
+  - {name: Sweetgreen,        type: greenhouse, token: sweetgreen}
+  - {name: Chewy,             type: greenhouse, token: chewy}
+  - {name: Peloton,           type: greenhouse, token: peloton}
+  - {name: Wayfair,           type: greenhouse, token: wayfair}
+  - {name: Etsy,              type: greenhouse, token: etsy}
+  - {name: Nextdoor,          type: greenhouse, token: nextdoor}
+  - {name: Duolingo,          type: greenhouse, token: duolingo}
+  - {name: Patreon,           type: greenhouse, token: patreon}
+  - {name: Vimeo,             type: greenhouse, token: vimeo}
+  - {name: Vox Media,         type: greenhouse, token: voxmedia}
+  - {name: Faire,             type: greenhouse, token: faire}
+  - {name: Flexport,          type: greenhouse, token: flexport}
+  - {name: Klaviyo,           type: greenhouse, token: klaviyo}
+  - {name: Braze,             type: greenhouse, token: braze}
+  - {name: Iterable,          type: greenhouse, token: iterable}
+
+  # ========================== DATA / ANALYTICS ============================
   - {name: Datadog,           type: greenhouse, token: datadog}
   - {name: Sigma Computing,   type: greenhouse, token: sigmacomputing}
+  - {name: Amplitude,         type: greenhouse, token: amplitude}
+  - {name: dbt Labs,          type: greenhouse, token: dbtlabs}
+  - {name: Fivetran,          type: greenhouse, token: fivetran}
+  - {name: Starburst,         type: greenhouse, token: starburst}
+  - {name: ClickHouse,        type: greenhouse, token: clickhouse}
+  - {name: Gusto,             type: greenhouse, token: gusto}
+  - {name: Checkr,            type: greenhouse, token: checkr}
+  - {name: Lattice,           type: greenhouse, token: lattice}
+  - {name: Retool,            type: greenhouse, token: retool}
+  - {name: Calendly,          type: greenhouse, token: calendly}
 
-  # ---- Lever ---------------------------------------------------------------
-  - {name: Netflix,           type: lever, token: netflix}
-  - {name: Plaid,             type: lever, token: plaid}
-
-  # ---- Ashby ---------------------------------------------------------------
-  - {name: Ramp,              type: ashby, token: ramp}
-  - {name: Notion,            type: ashby, token: notion}
-  - {name: Linear,            type: ashby, token: linear}
-  - {name: Vanta,             type: ashby, token: vanta}
-  - {name: Mercury,           type: ashby, token: mercury}
-  - {name: PostHog,           type: ashby, token: posthog}
-  - {name: Baseten,           type: ashby, token: baseten}
-
-  # ---- Workday (most common among the Fortune 500) -------------------------
-  # Confirm host/tenant/site on the live careers page before enabling. Disabled
-  # by default because Workday coordinates vary per company.
+  # ---- Workday (confirm host/tenant/site before enabling) -----------------
   - name: Example Workday Corp
     type: workday
     host: example.wd5.myworkdayjobs.com

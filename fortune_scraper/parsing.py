@@ -51,7 +51,8 @@ _PROGRAM_SIGNAL = (
     r"scholars?|pathways?|launch|ignite|catalyst|propel|elevate|spark|immersion|"
     r"academy|student|students|campus|university|college|undergrad\w*|"
     r"early[-\s]?(?:career|talent|insight)|women(?:'s|s)?|diversity|"
-    r"underrepresented)"
+    r"underrepresented|rotational|leadership\s+development|research|"
+    r"pre[-\s]?med\w*|pre[-\s]?health\w*|summer)"
 )
 _PROGRAM_WORD = (
     r"(?:program|programme|scheme|experience|cohort|fellowship|externship|"
