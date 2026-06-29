@@ -32,7 +32,9 @@ max_announce_per_run: 1
 
 # Recency: ignore postings whose release date is older than this many days, so
 # the feed stays current. Postings with no release date are kept (can't tell).
-only_new_since_days: 120
+# The verifier independently guarantees each posting is still live/applyable,
+# so a generous window mainly controls how "fresh" the release date must be.
+only_new_since_days: 240
 
 # Politeness delay between companies (seconds). Kept small since the list is
 # large; the ATS APIs are public and lightweight.

@@ -48,10 +48,7 @@ companies:
   - {name: Nuro,              type: greenhouse, token: nuro}
   # newly added candidates (tech)
   - {name: PagerDuty,         type: greenhouse, token: pagerduty}
-  - {name: Confluent,         type: greenhouse, token: confluent}
   - {name: Elastic,           type: greenhouse, token: elastic}
-  - {name: Sourcegraph,       type: greenhouse, token: sourcegraph}
-  - {name: Airbyte,           type: greenhouse, token: airbyte}
   - {name: Postman,           type: greenhouse, token: postman}
   - {name: MongoDB,           type: greenhouse, token: mongodb}
   - {name: New Relic,         type: greenhouse, token: newrelic}
@@ -72,12 +69,6 @@ companies:
   - {name: Marqeta,           type: greenhouse, token: marqeta}
   - {name: Carta,             type: greenhouse, token: carta}
   - {name: Betterment,        type: greenhouse, token: betterment}
-  # newly added candidates (fintech / crypto)
-  - {name: Circle,            type: greenhouse, token: circle}
-  - {name: Kraken,            type: greenhouse, token: kraken}
-  - {name: Alchemy,           type: greenhouse, token: alchemy}
-  - {name: Modern Treasury,   type: greenhouse, token: moderntreasury}
-  - {name: Addepar,           type: greenhouse, token: addepar}
   - {name: Ramp,              type: ashby,      token: ramp}
   - {name: Mercury,           type: ashby,      token: mercury}
   - {name: Plaid,             type: lever,      token: plaid}
@@ -90,12 +81,6 @@ companies:
   - {name: Maven Clinic,      type: greenhouse, token: mavenclinic}
   - {name: Cohere Health,     type: greenhouse, token: coherehealth}
   - {name: Zocdoc,            type: greenhouse, token: zocdoc}
-  # newly added candidates (health / biotech)
-  - {name: Cedar,             type: greenhouse, token: cedar}
-  - {name: Commure,           type: greenhouse, token: commure}
-  - {name: Benchling,         type: greenhouse, token: benchlingcareers}
-  - {name: Oscar Health,      type: greenhouse, token: hioscar}
-  - {name: Verily,            type: greenhouse, token: verily}
 
   # =================== CONSUMER / MARKETING / MEDIA ========================
   - {name: Glossier,          type: greenhouse, token: glossier}
@@ -109,9 +94,6 @@ companies:
   - {name: Klaviyo,           type: greenhouse, token: klaviyo}
   - {name: Braze,             type: greenhouse, token: braze}
   - {name: Iterable,          type: greenhouse, token: iterable}
-  # newly added candidates (consumer / marketing)
-  - {name: Whatnot,           type: greenhouse, token: whatnot}
-  - {name: Gopuff,            type: greenhouse, token: gopuff}
   - {name: Toast,             type: greenhouse, token: toast}
   - {name: ClassPass,         type: greenhouse, token: classpass}
 
