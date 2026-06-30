@@ -170,6 +170,49 @@ def test_routes_to_category_channel(tmp_path):
     pipe.close()
 
 
+def test_per_category_cap_one_per_channel(tmp_path):
+    settings = _settings(tmp_path)
+    settings.max_announce_per_category = 1
+    settings.category_webhooks = {
+        "engineering": "https://eng.test/hook",
+        "business": "https://biz.test/hook",
+    }
+    pipe = Pipeline(settings)
+
+    payload = {"jobs": [
+        {"id": 1, "title": "Software Engineering Intern",
+         "absolute_url": "https://boards.greenhouse.io/acme/jobs/1",
+         "first_published": "2025-01-05T00:00:00Z", "location": {"name": "Remote"},
+         "content": "<p>Apply now, we are hiring!</p>"},
+        {"id": 2, "title": "Software Engineering Intern II Backend",
+         "absolute_url": "https://boards.greenhouse.io/acme/jobs/2",
+         "first_published": "2025-01-06T00:00:00Z", "location": {"name": "Remote"},
+         "content": "<p>Apply now, we are hiring!</p>"},
+        {"id": 3, "title": "Marketing Intern",
+         "absolute_url": "https://boards.greenhouse.io/acme/jobs/3",
+         "first_published": "2025-01-07T00:00:00Z", "location": {"name": "Remote"},
+         "content": "<p>Apply now, we are hiring!</p>"},
+    ]}
+    fake = FakeHTTP({
+        "boards-api.greenhouse.io": FakeResponse(payload),
+        "boards.greenhouse.io/acme/jobs": FakeResponse(
+            text="<html>Apply now! We are hiring.</html>",
+            headers={"Content-Type": "text/html"}),
+        "eng.test": FakeResponse(status_code=204),
+        "biz.test": FakeResponse(status_code=204),
+    })
+    pipe.http = fake
+    pipe.verifier.http = fake
+    _set_notifiers(pipe, http=fake, dry_run=False)
+
+    result = pipe.run_once()
+    # One engineering + one business, despite two engineering roles being open.
+    assert result["announced_by_category"].get("engineering") == 1
+    assert result["announced_by_category"].get("business") == 1
+    assert result["announced"] == 2
+    pipe.close()
+
+
 def test_drip_cap_limits_announcements_per_run(tmp_path):
     # Three open roles, but max_announce_per_run=1 -> one per run, the rest
     # carry over and drip out on subsequent runs.

@@ -18,6 +18,10 @@ on:
         description: "Announce this many roles this run (blank = config default of 1)"
         type: string
         default: ""
+      per_category:
+        description: "Announce this many roles PER category/channel this run (e.g. 1 = one to each channel)"
+        type: string
+        default: ""
 
 concurrency:
   group: internship-scrape
@@ -62,9 +66,10 @@ jobs:
           DISCORD_WEBHOOK_TECH: ${{ secrets.discord_tech }}
           DISCORD_WEBHOOK_ENGINEERING: ${{ secrets.discord_engerineering }}
           DISCORD_WEBHOOK_HEALTHCARE: ${{ secrets.discord_healthcare }}
-          # Per-run override for the drip cap; blank on scheduled runs so they
-          # use the config default (1).
+          # Per-run overrides for the drip cap; blank on scheduled runs so they
+          # use the config default (1). per_category takes precedence when set.
           MAX_ANNOUNCE_PER_RUN: ${{ github.event.inputs.count }}
+          MAX_ANNOUNCE_PER_CATEGORY: ${{ github.event.inputs.per_category }}
         run: python -m fortune_scraper.cli run -v
 
       # Spreadsheet of every queued (not-yet-pushed) program, for separate

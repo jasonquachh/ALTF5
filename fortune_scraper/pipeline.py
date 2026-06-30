@@ -66,6 +66,7 @@ class Pipeline:
         seen_uids: set[str] = set()
         scanned_companies: set[str] = set()
         to_announce: list[tuple[Internship, bool]] = []
+        queued_by_cat: dict[str, int] = {}
         backfill_used = 0
         errors: list[str] = []
         scanned = 0
@@ -128,11 +129,15 @@ class Pipeline:
                 if already_pushed:
                     continue
 
-                # Drip throttle: cap how many postings we announce per run
-                # (0 = unlimited). Everything is still scanned above so dedup and
-                # closed-tracking stay accurate; we just stop *announcing* once
-                # the cap is hit. The rest carry over to the next run.
-                if s.max_announce_per_run and len(to_announce) >= s.max_announce_per_run:
+                # Drip throttle: cap how many postings we announce (0 = unlimited).
+                # A per-category cap (one per channel) takes precedence when set;
+                # otherwise the global per-run cap applies. Everything is still
+                # scanned above so dedup/closed-tracking stay accurate — we just
+                # stop *announcing* once the cap is hit; the rest carry over.
+                if s.max_announce_per_category:
+                    if queued_by_cat.get(item.category, 0) >= s.max_announce_per_category:
+                        continue
+                elif s.max_announce_per_run and len(to_announce) >= s.max_announce_per_run:
                     continue
 
                 if not self._within_recency(item):
@@ -151,6 +156,7 @@ class Pipeline:
                     continue
 
                 to_announce.append((item, is_new))
+                queued_by_cat[item.category] = queued_by_cat.get(item.category, 0) + 1
                 if decision == "backfill":
                     backfill_used += 1
 
