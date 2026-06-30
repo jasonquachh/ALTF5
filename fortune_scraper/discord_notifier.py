@@ -12,6 +12,7 @@ import logging
 import time
 
 from .models import Internship
+from .parsing import summarize
 
 log = logging.getLogger(__name__)
 
@@ -60,9 +61,7 @@ def build_embed(item: Internship, is_new: bool) -> dict:
         )
 
     tag = "🆕 Just opened" if is_new else "📌 Open now"
-    description = item.description or ""
-    if len(description) > 400:
-        description = description[:399] + "…"
+    description = summarize(item.description, 400)
 
     return {
         "title": f"{item.title}"[:256],

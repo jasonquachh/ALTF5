@@ -372,6 +372,23 @@ def truncate(text: str, limit: int) -> str:
     return text[: limit - 1].rstrip() + "…"
 
 
+def summarize(text: Optional[str], limit: int = 360) -> str:
+    """A concise, sentence-bounded snippet — just enough to judge a role,
+    never cut mid-word. Collapses whitespace and trims to the last full
+    sentence within `limit` (falling back to a clean word boundary)."""
+    if not text:
+        return ""
+    text = re.sub(r"\s+", " ", text).strip()
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    end = max(cut.rfind(". "), cut.rfind("! "), cut.rfind("? "))
+    if end >= int(limit * 0.5):
+        return cut[: end + 1].strip()
+    sp = cut.rfind(" ")
+    return (cut[:sp] if sp > 0 else cut).rstrip() + "…"
+
+
 # ---------------------------------------------------------------------------
 # Salary / compensation
 # ---------------------------------------------------------------------------
@@ -482,10 +499,14 @@ def parse_timestamp(value) -> Optional[datetime]:
 # Requirements
 # ---------------------------------------------------------------------------
 
+# Headers that introduce actual *requirements* — deliberately excludes
+# "what you'll do" / "responsibilities" so we don't show duties as requirements.
 _REQ_HEADER_RE = re.compile(
-    r"(requirements?|qualifications?|what\s+(?:you'?ll|we'?re\s+looking)|"
+    r"(requirements?|qualifications?|what\s+we'?re\s+looking\s+for|"
     r"who\s+you\s+are|minimum\s+qualifications?|basic\s+qualifications?|"
-    r"what\s+you\s+(?:need|bring))",
+    r"preferred\s+qualifications?|what\s+you'?ll\s+(?:need|bring|have)|"
+    r"what\s+you\s+(?:need|bring|have)|skills\s+(?:and|&)\s+experience|"
+    r"about\s+you)",
     re.IGNORECASE,
 )
 

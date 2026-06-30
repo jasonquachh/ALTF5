@@ -21,6 +21,7 @@ from datetime import datetime, timedelta, timezone
 
 from .config import Settings
 from .discord_notifier import DiscordNotifier
+from .enrichment import enrich, needs_enrichment
 from .http_client import build_session, polite_sleep
 from .models import Internship
 from .parsing import (
@@ -160,6 +161,15 @@ class Pipeline:
                 if not result.ok:
                     log.info("Not applyable, skipping: %s (%s)", item, result.reason)
                     continue
+
+                # Dig deep: fill in any missing details (description, salary,
+                # requirements, deadline) from the real application page so the
+                # announcement is complete, then re-validate the salary and
+                # persist the enriched record.
+                if needs_enrichment(item):
+                    enrich(item, self.http)
+                    item.salary = clean_salary(item.salary)
+                    self.store.upsert_seen(item)
 
                 to_announce.append((item, is_new))
                 queued_by_cat[item.category] = queued_by_cat.get(item.category, 0) + 1
