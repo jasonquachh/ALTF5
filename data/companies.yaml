@@ -74,13 +74,15 @@ companies:
   - {name: Plaid,             type: lever,      token: plaid}
 
   # ===================== HEALTHCARE / BIOTECH (pre-med) ====================
-  - {name: Ginkgo Bioworks,   type: greenhouse, token: ginkgobioworks}
-  - {name: Recursion,         type: greenhouse, token: recursionpharmaceuticals}
-  - {name: Komodo Health,     type: greenhouse, token: komodohealth}
-  - {name: Flatiron Health,   type: greenhouse, token: flatironhealth}
-  - {name: Maven Clinic,      type: greenhouse, token: mavenclinic}
-  - {name: Cohere Health,     type: greenhouse, token: coherehealth}
-  - {name: Zocdoc,            type: greenhouse, token: zocdoc}
+  # category: healthcare routes these firms' otherwise-generic roles to the
+  # healthcare channel (clear engineering/business roles still classify normally).
+  - {name: Ginkgo Bioworks,   type: greenhouse, token: ginkgobioworks,            category: healthcare}
+  - {name: Recursion,         type: greenhouse, token: recursionpharmaceuticals,  category: healthcare}
+  - {name: Komodo Health,     type: greenhouse, token: komodohealth,              category: healthcare}
+  - {name: Flatiron Health,   type: greenhouse, token: flatironhealth,            category: healthcare}
+  - {name: Maven Clinic,      type: greenhouse, token: mavenclinic,               category: healthcare}
+  - {name: Cohere Health,     type: greenhouse, token: coherehealth,              category: healthcare}
+  - {name: Zocdoc,            type: greenhouse, token: zocdoc,                     category: healthcare}
 
   # =================== CONSUMER / MARKETING / MEDIA ========================
   - {name: Glossier,          type: greenhouse, token: glossier}

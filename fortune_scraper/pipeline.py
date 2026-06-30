@@ -123,6 +123,12 @@ class Pipeline:
                 # the role into a category/channel.
                 item.salary = clean_salary(item.salary)
                 item.category = categorize(item.title, item.department, item.description)
+                # A company-level category hint (e.g. healthcare/biotech firms)
+                # routes otherwise-generic roles to that channel; clear role
+                # signals (engineering/business/etc.) still win.
+                hint = company.get("category")
+                if hint and item.category == "tech":
+                    item.category = hint
 
                 is_new = self.store.upsert_seen(item)
                 already_pushed = self.store.is_pushed(item.uid)
