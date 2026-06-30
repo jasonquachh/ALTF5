@@ -17,6 +17,18 @@ us_only: true
 # credit. Anything with listed compensation is always kept.
 exclude_unpaid: true
 
+# College focus: de-emphasize graduate-level roles. When true, postings whose
+# title targets PhD / master's / MBA / postdoc audiences are skipped so the feed
+# centers on college (undergraduate) opportunities. "New grad" and rotational
+# "graduate programs" (for bachelor's grads) are still included.
+college_focus: true
+
+# Discord routing: each posting is sorted into a category and sent to that
+# category's channel. Channel webhooks come from these env vars / secrets:
+#   DISCORD_WEBHOOK_HEALTHCARE, DISCORD_WEBHOOK_ENGINEERING,
+#   DISCORD_WEBHOOK_TECH, DISCORD_WEBHOOK_BUSINESS
+# DISCORD_WEBHOOK_URL is the catch-all used when a category has no webhook.
+
 # On first run (and whenever new companies are added), announce internships
 # that are already open — not just ones that open from now on.
 announce_backfill: true

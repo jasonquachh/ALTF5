@@ -40,6 +40,7 @@ class Internship:
     employment_type: Optional[str] = None      # e.g. "Internship", "Co-op"
     remote: Optional[bool] = None
     description: Optional[str] = None           # plain-text, truncated upstream
+    category: Optional[str] = None             # healthcare/engineering/tech/business
 
     # Bookkeeping
     raw: dict[str, Any] = field(default_factory=dict, repr=False)

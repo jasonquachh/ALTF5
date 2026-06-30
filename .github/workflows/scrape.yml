@@ -55,10 +55,26 @@ jobs:
 
       - name: Run scraper
         env:
-          # Provided via repository secret (Settings -> Secrets and variables
-          # -> Actions). Never hardcode the URL here — this repo is public.
+          # Category channels (repo secrets). Each posting is routed to the
+          # channel matching its category; DISCORD_WEBHOOK_URL is the catch-all.
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_BUSINESS: ${{ secrets.discord_business }}
+          DISCORD_WEBHOOK_TECH: ${{ secrets.discord_tech }}
+          DISCORD_WEBHOOK_ENGINEERING: ${{ secrets.discord_engerineering }}
+          DISCORD_WEBHOOK_HEALTHCARE: ${{ secrets.discord_healthcare }}
           # Per-run override for the drip cap; blank on scheduled runs so they
           # use the config default (1).
           MAX_ANNOUNCE_PER_RUN: ${{ github.event.inputs.count }}
         run: python -m fortune_scraper.cli run -v
+
+      # Spreadsheet of every queued (not-yet-pushed) program, for separate
+      # viewing. Download it from this run's "Artifacts" section.
+      - name: Export queued programs to CSV
+        run: python -m fortune_scraper.cli export --output queued_programs.csv
+
+      - name: Upload queued-programs spreadsheet
+        uses: actions/upload-artifact@v4
+        with:
+          name: queued-programs
+          path: queued_programs.csv
+          if-no-files-found: warn

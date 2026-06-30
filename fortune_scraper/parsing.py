@@ -107,6 +107,187 @@ def looks_like_internship(*texts: Optional[str]) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# College-level vs graduate/PhD focus
+# ---------------------------------------------------------------------------
+
+# Roles aimed at PhD / master's / MBA / postdoc audiences. We de-emphasize these
+# in favor of college (undergraduate) opportunities. Note: "new grad" and
+# "graduate program / rotational" target bachelor's grads and are NOT excluded.
+_GRADUATE_ONLY_RE = re.compile(
+    r"\b(ph\.?\s?d\.?|phd|doctoral|doctorate|post[-\s]?doc\w*|"
+    r"master'?s\s+(?:degree|student|candidate)|mba|"
+    r"graduate\s+student|grad\s+student|ms/phd|m\.?s\.?/ph)\b",
+    re.IGNORECASE,
+)
+
+
+def is_graduate_only(title: Optional[str]) -> bool:
+    """True for PhD/master's/MBA/postdoc-targeted roles (not college-level)."""
+    if not title:
+        return False
+    return bool(_GRADUATE_ONLY_RE.search(title))
+
+
+# ---------------------------------------------------------------------------
+# Category classification (which Discord channel a role belongs to)
+# ---------------------------------------------------------------------------
+
+CATEGORIES = ("healthcare", "engineering", "tech", "business")
+
+_CAT_HEALTHCARE_RE = re.compile(
+    r"\b(health\w*|medical|medicine|clinic\w*|biotech\w*|biolog\w*|pharma\w*|"
+    r"nurs\w*|patient|life\s+sciences?|genomics?|genetics?|bioinformatics?|"
+    r"pre[-\s]?med\w*|pre[-\s]?health\w*|epidemiolog\w*|public\s+health|"
+    r"therapeutics?|oncolog\w*|immunolog\w*|neuroscience|wet\s+lab|laboratory|"
+    r"clinical|drug\s+discovery|biomedical|physician|hospital)\b",
+    re.IGNORECASE,
+)
+_CAT_ENGINEERING_RE = re.compile(
+    r"\b(software\s+engineer\w*|swe|engineering|engineer|developer|backend|"
+    r"back-end|frontend|front-end|full[-\s]?stack|devops|sre|"
+    r"site\s+reliability|infrastructure|platform\s+engineer|embedded|firmware|"
+    r"hardware|mechanical|electrical|civil|aerospace|robotics|systems\s+engineer|"
+    r"ml\s+engineer|machine\s+learning\s+engineer|data\s+engineer|"
+    r"security\s+engineer|qa\s+engineer|test\s+engineer)\b",
+    re.IGNORECASE,
+)
+_CAT_TECH_RE = re.compile(
+    r"\b(product\s+manager|product\s+management|product\s+design|ux|ui|"
+    r"designer|\bdesign\b|data\s+scien\w*|data\s+analy\w*|analytics|"
+    r"machine\s+learning|artificial\s+intelligence|\bai\b|\bml\b|"
+    r"research\s+scien\w*|information\s+technology|\bit\b|technical\s+program|"
+    r"\bqa\b|quality\s+assurance|cyber\s?security|\bsecurity\b|product\b)\b",
+    re.IGNORECASE,
+)
+_CAT_BUSINESS_RE = re.compile(
+    r"\b(marketing|sales|business\s+development|bizdev|account\s+executive|"
+    r"finance|financial|accounting|operations|\bops\b|human\s+resources|\bhr\b|"
+    r"recruit\w*|people\s+team|talent|strategy|consult\w*|partnerships?|"
+    r"communications?|\bpr\b|legal|growth|revenue|customer\s+success|"
+    r"supply\s+chain|procurement|brand|content|social\s+media|community|"
+    r"administrative|program\s+management|project\s+manager)\b",
+    re.IGNORECASE,
+)
+
+
+def categorize(title: Optional[str], department: Optional[str] = None,
+               description: Optional[str] = None) -> str:
+    """Sort a posting into one of CATEGORIES. Healthcare is checked first (the
+    user wants extensive pre-med/healthcare coverage); tech is the catch-all."""
+    blob = " ".join(t for t in (title, department) if t)
+    if not blob.strip():
+        blob = (description or "")[:200]
+    if _CAT_HEALTHCARE_RE.search(blob):
+        return "healthcare"
+    if _CAT_ENGINEERING_RE.search(blob):
+        return "engineering"
+    if _CAT_BUSINESS_RE.search(blob):
+        return "business"
+    if _CAT_TECH_RE.search(blob):
+        return "tech"
+    return "tech"
+
+
+# ---------------------------------------------------------------------------
+# Salary sanitization (only show reasonable, sensible compensation)
+# ---------------------------------------------------------------------------
+
+_PERIOD_RE = re.compile(
+    r"(per\s+hour|/\s?hour|/\s?hr|\bhourly\b|\bhr\b|"
+    r"per\s+week|/\s?week|/\s?wk|\bweekly\b|"
+    r"per\s+month|/\s?month|/\s?mo\b|\bmonthly\b|\bmonth\b|"
+    r"per\s+(?:year|annum)|/\s?year|/\s?yr|\bannual\w*|\byear\b|\byr\b)",
+    re.IGNORECASE,
+)
+_MONEY_RE = re.compile(r"[$£€]?\s?(\d{1,3}(?:[,\.]\d{3})+|\d+(?:\.\d+)?)\s?([kK])?")
+
+# Plausible internship comp ranges, per period.
+_PLAUSIBLE = {
+    "hour": (7.0, 250.0),
+    "week": (200.0, 8000.0),
+    "month": (800.0, 40000.0),
+    "year": (15000.0, 500000.0),
+}
+_SUFFIX = {"hour": "hr", "week": "wk", "month": "mo", "year": "yr"}
+
+
+def _to_amount(num: str, k: Optional[str]) -> Optional[float]:
+    s = num.strip()
+    try:
+        if k:                         # "45k"
+            return float(s.replace(",", "")) * 1000
+        if "," in s:                  # US thousands: 90,000
+            return float(s.replace(",", ""))
+        if "." in s:
+            intpart, _, frac = s.partition(".")
+            if len(frac) == 3 and frac.isdigit():   # European thousands: 3.000
+                return float(intpart + frac)
+            return float(s)
+        return float(s)
+    except ValueError:
+        return None
+
+
+def _detect_period(text: str) -> Optional[str]:
+    m = _PERIOD_RE.search(text)
+    if not m:
+        return None
+    tok = m.group(0).lower()
+    if "hour" in tok or "/hr" in tok or tok.strip() == "hr" or "hourly" in tok:
+        return "hour"
+    if "week" in tok or "/wk" in tok or "weekly" in tok:
+        return "week"
+    if "month" in tok or "/mo" in tok or "monthly" in tok:
+        return "month"
+    return "year"
+
+
+def _infer_period(hi: float) -> Optional[str]:
+    if hi <= 250:
+        return "hour"
+    if hi <= 9000:
+        return "month"
+    if hi <= 500000:
+        return "year"
+    return None
+
+
+def _fmt_amount(x: float, period: str) -> str:
+    if period == "hour":
+        return f"${x:,.2f}".rstrip("0").rstrip(".")
+    return f"${x:,.0f}"
+
+
+def clean_salary(raw: Optional[str]) -> Optional[str]:
+    """Return a tidy, plausible comp string, or None if it can't be validated.
+
+    Drops nonsense (e.g. a stray "$3.000" or a single huge number) so the
+    Discord embed never shows a salary that doesn't make sense.
+    """
+    if not raw:
+        return None
+    text = str(raw)
+    amounts = []
+    for m in _MONEY_RE.finditer(text):
+        amt = _to_amount(m.group(1), m.group(2))
+        if amt and amt > 0:
+            amounts.append(amt)
+    if not amounts:
+        return None
+    lo, hi = min(amounts), max(amounts)
+    period = _detect_period(text) or _infer_period(hi)
+    if period is None:
+        return None
+    plo, phi = _PLAUSIBLE[period]
+    if not (plo <= lo <= phi and plo <= hi <= phi):
+        return None
+    suffix = _SUFFIX[period]
+    if abs(hi - lo) < 1e-6:
+        return f"{_fmt_amount(lo, period)}/{suffix}"
+    return f"{_fmt_amount(lo, period)}–{_fmt_amount(hi, period)}/{suffix}"
+
+
+# ---------------------------------------------------------------------------
 # Paid / unpaid detection
 # ---------------------------------------------------------------------------
 

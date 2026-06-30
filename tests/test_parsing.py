@@ -85,6 +85,60 @@ class TestPaidDetection:
         assert not parsing.looks_unpaid(None)
 
 
+class TestCategorize:
+    def test_healthcare_first(self):
+        assert parsing.categorize("Clinical Research Intern") == "healthcare"
+        assert parsing.categorize("Biotech Lab Intern") == "healthcare"
+        assert parsing.categorize("Pre-Med Summer Program") == "healthcare"
+        assert parsing.categorize("Pharmacovigilance Intern") == "healthcare"
+
+    def test_engineering(self):
+        assert parsing.categorize("Software Engineering Intern") == "engineering"
+        assert parsing.categorize("Mechanical Engineer Co-op") == "engineering"
+        assert parsing.categorize("Data Engineer Intern") == "engineering"
+
+    def test_business(self):
+        assert parsing.categorize("Marketing Intern") == "business"
+        assert parsing.categorize("Sales Development Intern") == "business"
+        assert parsing.categorize("Finance Summer Analyst") == "business"
+
+    def test_tech_catchall(self):
+        assert parsing.categorize("Data Analytics Intern") == "tech"
+        assert parsing.categorize("Product Design Intern") == "tech"
+        assert parsing.categorize("Generalist Intern") == "tech"
+
+
+class TestGraduateOnly:
+    def test_grad_only_flagged(self):
+        assert parsing.is_graduate_only("PhD Research Scientist Intern")
+        assert parsing.is_graduate_only("Ph.D. Machine Learning Intern")
+        assert parsing.is_graduate_only("MBA Summer Associate")
+        assert parsing.is_graduate_only("Postdoctoral Fellow")
+
+    def test_college_level_kept(self):
+        assert not parsing.is_graduate_only("Software Engineering Intern")
+        assert not parsing.is_graduate_only("New Grad Software Engineer")
+        assert not parsing.is_graduate_only("Graduate Rotational Program")
+
+
+class TestCleanSalary:
+    def test_hourly_range(self):
+        assert parsing.clean_salary("Compensation: $25 - $30 per hour") == "$25–$30/hr"
+
+    def test_annual_range(self):
+        out = parsing.clean_salary("salary range is $90,000 to $110,000 per year")
+        assert out == "$90,000–$110,000/yr"
+
+    def test_k_suffix_inferred_annual(self):
+        assert parsing.clean_salary("$120k") == "$120,000/yr"
+
+    def test_drops_implausible(self):
+        # A stray "$3" or malformed value should not be shown.
+        assert parsing.clean_salary("$3") is None
+        assert parsing.clean_salary("Competitive pay") is None
+        assert parsing.clean_salary(None) is None
+
+
 class TestHtmlToText:
     def test_strips_tags_and_keeps_bullets(self):
         html = "<p>Hello</p><ul><li>One</li><li>Two</li></ul><script>x=1</script>"

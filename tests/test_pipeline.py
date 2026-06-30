@@ -48,8 +48,16 @@ def _patch_http(pipe, payload):
     )
     pipe.http = fake
     pipe.verifier.http = fake
-    pipe.notifier.http = fake
-    pipe.notifier.dry_run = False
+    _set_notifiers(pipe, http=fake, dry_run=False)
+
+
+def _set_notifiers(pipe, http=None, dry_run=None):
+    """Patch every channel notifier (and the default) for tests."""
+    for n in list(pipe._notifiers.values()) + [pipe.notifier]:
+        if http is not None:
+            n.http = http
+        if dry_run is not None:
+            n.dry_run = dry_run
 
 
 def test_announces_once_then_dedupes(tmp_path):
@@ -73,14 +81,14 @@ def test_dry_run_does_not_mark_pushed(tmp_path):
     settings = _settings(tmp_path)
     pipe = Pipeline(settings)
     _patch_http(pipe, _greenhouse_payload(1))
-    pipe.notifier.dry_run = True
+    _set_notifiers(pipe, dry_run=True)
 
     r1 = pipe.run_once()
     assert r1["announced"] == 1            # dry-run still logs what it would send
     assert pipe.store.stats()["pushed"] == 0   # but nothing is marked pushed
 
     # Configure a real webhook: the posting now actually goes out.
-    pipe.notifier.dry_run = False
+    _set_notifiers(pipe, dry_run=False)
     r2 = pipe.run_once()
     assert r2["announced"] == 1
     assert pipe.store.stats()["pushed"] == 1
@@ -122,6 +130,43 @@ def test_unverifiable_posting_is_skipped(tmp_path):
 
     result = pipe.run_once()
     assert result["announced"] == 0
+    pipe.close()
+
+
+def test_routes_to_category_channel(tmp_path):
+    settings = _settings(tmp_path)
+    settings.category_webhooks = {
+        "healthcare": "https://hc.test/hook",
+        "tech": "https://tech.test/hook",
+        "engineering": "https://eng.test/hook",
+        "business": "https://biz.test/hook",
+    }
+    pipe = Pipeline(settings)
+
+    payload = {"jobs": [{
+        "id": 1, "title": "Clinical Research Intern, Summer 2025",
+        "absolute_url": "https://boards.greenhouse.io/acme/jobs/1",
+        "first_published": "2025-01-05T00:00:00Z",
+        "location": {"name": "Boston, MA"},
+        "content": "<p>Join our clinical team. Apply now, we are hiring!</p>",
+    }]}
+    fake = FakeHTTP({
+        "boards-api.greenhouse.io": FakeResponse(payload),
+        "boards.greenhouse.io/acme/jobs": FakeResponse(
+            text="<html>Apply now! We are hiring.</html>",
+            headers={"Content-Type": "text/html"}),
+        "hc.test": FakeResponse(status_code=204),
+    })
+    pipe.http = fake
+    pipe.verifier.http = fake
+    _set_notifiers(pipe, http=fake, dry_run=False)
+
+    result = pipe.run_once()
+    assert result["announced"] == 1
+    assert result["announced_by_category"] == {"healthcare": 1}
+    # The Discord POST must have gone to the healthcare channel.
+    posted_urls = [c[1] for c in fake.calls if c[0] == "POST"]
+    assert posted_urls == ["https://hc.test/hook"]
     pipe.close()
 
 

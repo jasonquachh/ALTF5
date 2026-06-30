@@ -13,11 +13,13 @@ from dotenv import load_dotenv
 @dataclass
 class Settings:
     companies: list[dict] = field(default_factory=list)
-    discord_webhook_url: str = ""
+    discord_webhook_url: str = ""              # default / catch-all channel
+    category_webhooks: dict = field(default_factory=dict)  # category -> webhook url
     db_path: str = "internships.db"
     verify_applyable: bool = True
     us_only: bool = True
     exclude_unpaid: bool = True
+    college_focus: bool = True                 # de-emphasize PhD/master's/MBA roles
     announce_backfill: bool = True
     max_backfill_per_run: int = 25
     max_announce_per_run: int = 0          # 0 = unlimited; set to 1 for a drip feed
@@ -28,7 +30,11 @@ class Settings:
 
     @property
     def has_webhook(self) -> bool:
-        return bool(self.discord_webhook_url)
+        return bool(self.discord_webhook_url) or any(self.category_webhooks.values())
+
+    def webhook_for(self, category: str) -> str:
+        """Channel webhook for a category, falling back to the default."""
+        return self.category_webhooks.get(category) or self.discord_webhook_url
 
 
 def load_settings(
@@ -49,11 +55,20 @@ def load_settings(
         loaded = yaml.safe_load(Path(companies_path).read_text()) or {}
         companies = loaded.get("companies", loaded if isinstance(loaded, list) else [])
 
+    category_webhooks = {
+        "business": os.environ.get("DISCORD_WEBHOOK_BUSINESS", ""),
+        "tech": os.environ.get("DISCORD_WEBHOOK_TECH", ""),
+        "engineering": os.environ.get("DISCORD_WEBHOOK_ENGINEERING", ""),
+        "healthcare": os.environ.get("DISCORD_WEBHOOK_HEALTHCARE", ""),
+    }
+    category_webhooks = {k: v for k, v in category_webhooks.items() if v}
+
     settings = Settings(
         companies=[c for c in companies if c.get("enabled", True)],
         discord_webhook_url=os.environ.get(
             "DISCORD_WEBHOOK_URL", cfg.get("discord_webhook_url", "")
         ),
+        category_webhooks=category_webhooks,
         db_path=os.environ.get("DB_PATH", cfg.get("db_path", "internships.db")),
         verify_applyable=_as_bool(
             os.environ.get("VERIFY_APPLYABLE"), cfg.get("verify_applyable", True)
@@ -61,6 +76,9 @@ def load_settings(
         us_only=_as_bool(os.environ.get("US_ONLY"), cfg.get("us_only", True)),
         exclude_unpaid=_as_bool(
             os.environ.get("EXCLUDE_UNPAID"), cfg.get("exclude_unpaid", True)
+        ),
+        college_focus=_as_bool(
+            os.environ.get("COLLEGE_FOCUS"), cfg.get("college_focus", True)
         ),
         announce_backfill=_as_bool(
             os.environ.get("ANNOUNCE_BACKFILL"), cfg.get("announce_backfill", True)

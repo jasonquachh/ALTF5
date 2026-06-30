@@ -23,7 +23,13 @@ from .config import Settings
 from .discord_notifier import DiscordNotifier
 from .http_client import build_session, polite_sleep
 from .models import Internship
-from .parsing import filter_us_locations, looks_unpaid
+from .parsing import (
+    categorize,
+    clean_salary,
+    filter_us_locations,
+    is_graduate_only,
+    looks_unpaid,
+)
 from .sources import build_source
 from .store import Store
 from .verifier import Verifier
@@ -37,12 +43,23 @@ class Pipeline:
         self.http = build_session(timeout=20.0)
         self.store = Store(settings.db_path)
         self.verifier = Verifier(self.http, enabled=settings.verify_applyable)
+        # One notifier per category webhook (plus a default/catch-all). When a
+        # category has no dedicated webhook it falls back to the default.
+        self._notifiers: dict[str, DiscordNotifier] = {}
+        for category in ("healthcare", "engineering", "tech", "business"):
+            url = settings.webhook_for(category)
+            self._notifiers[category] = DiscordNotifier(
+                url, self.http, username=settings.discord_username,
+                dry_run=settings.dry_run,
+            )
+        # Back-compat default notifier (used when a posting has no category).
         self.notifier = DiscordNotifier(
-            settings.discord_webhook_url,
-            self.http,
-            username=settings.discord_username,
-            dry_run=settings.dry_run,
+            settings.discord_webhook_url, self.http,
+            username=settings.discord_username, dry_run=settings.dry_run,
         )
+
+    def _notifier_for(self, category: str) -> DiscordNotifier:
+        return self._notifiers.get(category, self.notifier)
 
     def run_once(self) -> dict:
         s = self.settings
@@ -88,11 +105,23 @@ class Pipeline:
                         continue
                     item.locations = us_locs
 
+                # College focus: de-emphasize PhD / master's / MBA / postdoc
+                # roles so the feed targets college-level students.
+                if s.college_focus and is_graduate_only(item.title):
+                    log.info("Skipping graduate-only role: %s", item)
+                    continue
+
                 # Paid-only: drop roles that explicitly state they are unpaid /
                 # for academic credit. (Anything with listed comp is kept.)
                 if s.exclude_unpaid and not item.salary and looks_unpaid(item.description):
                     log.info("Skipping unpaid role: %s", item)
                     continue
+
+                # Clean up display fields before anything is stored or sent:
+                # validate the salary so only sensible comp is shown, and sort
+                # the role into a category/channel.
+                item.salary = clean_salary(item.salary)
+                item.category = categorize(item.title, item.department, item.description)
 
                 is_new = self.store.upsert_seen(item)
                 already_pushed = self.store.is_pushed(item.uid)
@@ -133,25 +162,34 @@ class Pipeline:
         closed = self._reconcile_closed(seen_uids, scanned_companies)
 
         sent = 0
+        by_category: dict[str, int] = {}
         if to_announce:
-            # Oldest-released first so the channel reads chronologically.
+            # Oldest-released first so each channel reads chronologically.
             to_announce.sort(
                 key=lambda t: t[0].release_date or datetime.min.replace(tzinfo=timezone.utc)
             )
-            delivered = self.notifier.announce(to_announce)
-            sent = len(delivered)
-            # Only persist "pushed" for the postings Discord actually accepted.
-            # In dry-run we log what *would* be sent but must NOT mark it pushed,
-            # otherwise the posting is silently swallowed once a real webhook is
-            # configured.
-            if not self.notifier.dry_run:
-                for item in delivered:
-                    self.store.mark_pushed(item.uid)
+            # Group by category and announce each group to its own channel.
+            groups: dict[str, list] = {}
+            for item, is_new in to_announce:
+                groups.setdefault(item.category or "tech", []).append((item, is_new))
+
+            for category, items in groups.items():
+                notifier = self._notifier_for(category)
+                delivered = notifier.announce(items)
+                # Only persist "pushed" for postings Discord actually accepted.
+                # Dry-run logs what *would* be sent but must not mark pushed.
+                if not notifier.dry_run:
+                    for item in delivered:
+                        self.store.mark_pushed(item.uid)
+                sent += len(delivered)
+                if delivered:
+                    by_category[category] = len(delivered)
 
         summary = {
             "companies": len(s.companies),
             "scanned": scanned,
             "announced": sent,
+            "announced_by_category": by_category,
             "queued": len(to_announce),
             "backfilled": backfill_used,
             "closed": closed,

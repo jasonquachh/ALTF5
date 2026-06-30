@@ -83,6 +83,28 @@ class Store:
         )
         return {r["uid"] for r in cur.fetchall() if r["company"] in companies}
 
+    def records(self, *, only_open: bool = True, only_unpushed: bool = False) -> list[dict]:
+        """Return stored postings as dicts (from the saved JSON payload),
+        most-recently-seen first. Used for the spreadsheet/CSV export."""
+        sql = "SELECT payload, pushed_at, closed_at, last_seen FROM internships"
+        clauses = []
+        if only_open:
+            clauses.append("closed_at IS NULL")
+        if only_unpushed:
+            clauses.append("pushed_at IS NULL")
+        if clauses:
+            sql += " WHERE " + " AND ".join(clauses)
+        sql += " ORDER BY last_seen DESC"
+        out = []
+        for row in self.conn.execute(sql).fetchall():
+            try:
+                rec = json.loads(row["payload"]) if row["payload"] else {}
+            except (ValueError, TypeError):
+                rec = {}
+            rec["pushed"] = bool(row["pushed_at"])
+            out.append(rec)
+        return out
+
     # -- mutations ----------------------------------------------------------
 
     def upsert_seen(self, item: Internship) -> bool:

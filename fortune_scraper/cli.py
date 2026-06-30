@@ -69,6 +69,12 @@ def main(argv=None) -> int:
     watch.add_argument("--interval", type=int, default=900,
                        help="Seconds between passes (default 900 = 15 min).")
     sub.add_parser("stats", parents=[common], help="Print dedup-store statistics and exit.")
+    exp = sub.add_parser("export", parents=[common],
+                         help="Export on-file programs to a CSV spreadsheet.")
+    exp.add_argument("--output", default="queued_programs.csv",
+                     help="CSV path to write (default queued_programs.csv).")
+    exp.add_argument("--all", action="store_true",
+                     help="Include already-pushed programs too (default: unpushed only).")
 
     args = parser.parse_args(argv)
     _setup_logging(args.verbose)
@@ -94,6 +100,20 @@ def main(argv=None) -> int:
         pipe = Pipeline(settings)
         print(pipe.store.stats())
         pipe.close()
+        return 0
+
+    if command == "export":
+        from .exporter import export_csv
+        from .store import Store
+        store = Store(settings.db_path)
+        try:
+            count = export_csv(
+                store, args.output, only_open=True, only_unpushed=not args.all
+            )
+        finally:
+            store.close()
+        scope = "all open" if args.all else "queued (not yet pushed)"
+        print(f"Exported {count} {scope} programs to {args.output}")
         return 0
 
     if command == "run":

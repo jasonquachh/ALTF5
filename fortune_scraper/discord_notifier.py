@@ -45,6 +45,8 @@ def build_embed(item: Internship, is_new: bool) -> dict:
     ]
     if item.department:
         fields.append(_field("🏢 Team", item.department))
+    if item.category:
+        fields.append(_field("🗂️ Category", item.category.title()))
     if item.employment_type:
         fields.append(_field("🧾 Type", item.employment_type))
 
