@@ -13,6 +13,7 @@ from .greenhouse import GreenhouseSource
 from .lever import LeverSource
 from .ashby import AshbySource
 from .workday import WorkdaySource
+from .json_list import JsonListSource
 
 # Registry keyed by the `type` field used in companies.yaml.
 REGISTRY: dict[str, Type[Source]] = {
@@ -20,6 +21,7 @@ REGISTRY: dict[str, Type[Source]] = {
     LeverSource.type: LeverSource,
     AshbySource.type: AshbySource,
     WorkdaySource.type: WorkdaySource,
+    JsonListSource.type: JsonListSource,
 }
 
 
@@ -40,6 +42,7 @@ __all__ = [
     "LeverSource",
     "AshbySource",
     "WorkdaySource",
+    "JsonListSource",
     "REGISTRY",
     "build_source",
 ]

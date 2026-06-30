@@ -19,6 +19,29 @@
 # =============================================================================
 
 companies:
+  # ===== AGGREGATOR FEEDS (intern-list.com upstream open-source sources) =====
+  # intern-list.com and similar sites aggregate from open, structured internship
+  # lists. We pull those upstream JSON feeds directly (hundreds of postings),
+  # then the pipeline filters to US + paid + recent + verified-legit and routes
+  # each to its category channel. Wrong URLs 404 gracefully; adjust the repo /
+  # branch if a list moves.
+  - name: Summer 2026 Internships (Simplify)
+    type: json_list
+    source_label: intern-list
+    url: https://raw.githubusercontent.com/SimplifyJobs/Summer2026-Internships/dev/.github/scripts/listings.json
+  - name: Summer 2026 Internships (vanshb03)
+    type: json_list
+    source_label: intern-list
+    url: https://raw.githubusercontent.com/vanshb03/Summer2026-Internships/main/.github/scripts/listings.json
+  - name: New Grad Positions (Simplify)
+    type: json_list
+    source_label: intern-list
+    url: https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json
+  - name: Off-Season Internships (Simplify)
+    type: json_list
+    source_label: intern-list
+    url: https://raw.githubusercontent.com/SimplifyJobs/Off-Season-Internships/dev/.github/scripts/listings.json
+
   # ============================ TECH / SOFTWARE ============================
   - {name: Stripe,            type: greenhouse, token: stripe}
   - {name: Airbnb,            type: greenhouse, token: airbnb}

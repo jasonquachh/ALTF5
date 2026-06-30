@@ -550,6 +550,30 @@ def looks_closed(page_text: Optional[str]) -> bool:
 
 
 # ---------------------------------------------------------------------------
+# Scam / fake-posting detection
+# ---------------------------------------------------------------------------
+
+# Phrases strongly associated with recruitment scams and fake postings.
+_SCAM_MARKERS = (
+    "wire transfer", "western union", "money gram", "moneygram",
+    "processing fee", "application fee", "training fee", "registration fee",
+    "pay a fee", "send money", "gift card", "bitcoin", "crypto payment",
+    "background check fee", "equipment will be mailed", "equipment will be shipped",
+    "telegram.me", "t.me/", "contact me on telegram", "text me on whatsapp",
+    "personal email to apply", "interview via google hangouts",
+    "no experience necessary earn", "work from home earn $",
+)
+
+
+def looks_scam(page_text: Optional[str]) -> bool:
+    """Heuristic: True if a page shows classic recruitment-scam signals."""
+    if not page_text:
+        return False
+    low = page_text.lower()
+    return any(marker in low for marker in _SCAM_MARKERS)
+
+
+# ---------------------------------------------------------------------------
 # US-only location filtering
 # ---------------------------------------------------------------------------
 
