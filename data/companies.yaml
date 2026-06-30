@@ -37,10 +37,6 @@ companies:
     type: json_list
     source_label: intern-list
     url: https://raw.githubusercontent.com/SimplifyJobs/New-Grad-Positions/dev/.github/scripts/listings.json
-  - name: Off-Season Internships (Simplify)
-    type: json_list
-    source_label: intern-list
-    url: https://raw.githubusercontent.com/SimplifyJobs/Off-Season-Internships/dev/.github/scripts/listings.json
 
   # ============================ TECH / SOFTWARE ============================
   - {name: Stripe,            type: greenhouse, token: stripe}
