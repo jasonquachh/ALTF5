@@ -87,14 +87,15 @@ def main(argv=None) -> int:
         print("No companies configured. Add entries to data/companies.yaml.", file=sys.stderr)
         return 2
 
-    if not settings.has_webhook and not settings.dry_run:
+    command = args.command or "run"
+
+    # Only the announce paths need a webhook; export/stats just read the store.
+    if command in ("run", "watch") and not settings.has_webhook and not settings.dry_run:
         print(
-            "Warning: DISCORD_WEBHOOK_URL is not set — running in dry-run mode.",
+            "Warning: no Discord webhook is set — running in dry-run mode.",
             file=sys.stderr,
         )
         settings.dry_run = True
-
-    command = args.command or "run"
 
     if command == "stats":
         pipe = Pipeline(settings)

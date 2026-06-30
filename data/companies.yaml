@@ -113,20 +113,14 @@ companies:
   # Notable venture-backed startups. The VC aggregator boards themselves
   # (YC workatastartup, a16z/Pear Getro boards) need verified board IDs, so we
   # track their portfolio companies' own ATS boards here instead.
-  - {name: Rippling,          type: greenhouse, token: rippling}
   - {name: Anduril,           type: greenhouse, token: andurilindustries}
-  - {name: Applied Intuition, type: greenhouse, token: appliedintuition}
   - {name: Mixpanel,          type: greenhouse, token: mixpanel}
   - {name: Vercel,            type: greenhouse, token: vercel}
   - {name: Figma,             type: greenhouse, token: figma}
-  - {name: Zapier,            type: greenhouse, token: zapier}
   - {name: Deel,              type: ashby,      token: deel}
   - {name: Replit,            type: ashby,      token: replit}
   - {name: Sierra,            type: ashby,      token: sierra}
   - {name: Writer,            type: ashby,      token: writer}
-  - {name: Glean,             type: ashby,      token: glean}
-  - {name: Perplexity,        type: ashby,      token: perplexityai}
-  - {name: Anysphere (Cursor),type: ashby,      token: anysphere}
 
   # ---- Workday (confirm host/tenant/site before enabling) -----------------
   - name: Example Workday Corp
